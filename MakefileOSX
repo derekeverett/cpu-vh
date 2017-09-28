@@ -1,5 +1,4 @@
 UNAME := $(shell uname)
-NVCC := $(shell command -v nvcc 2> /dev/null)
 
 DIR_MAIN       = ./
 DIR_SRC        = $(DIR_MAIN)rhic
@@ -12,16 +11,8 @@ FLOWTRACE =
 LDFLAGS=
 CFLAGS = $(DEBUG) $(OPTIMIZATION) $(FLOWTRACE) $(OPTIONS) -Wno-comment
 
-ifdef NVCC
-COMPILER = nvcc
-OPTIMIZATION = -O5
-OPTIONS := $(OPTIONS) --relocatable-device-code=true -Wno-deprecated-gpu-targets
-LINK_OPTIONS := $(LINK_OPTIONS) --cudart static --relocatable-device-code=true -link -Wno-deprecated-gpu-targets
-endif
-ifndef NVCC
-COMPILER = gcc
+COMPILER = c++ -std=c++11
 OPTIMIZATION = -O3
-endif
 
 ifeq ($(UNAME), Linux)
 LIBS = -lm -lgsl -lgslcblas -lconfig
@@ -30,7 +21,9 @@ ifeq ($(UNAME), Darwin)
 LIBS = -L /usr/local/lib -lm -lgsl -lgslcblas -lconfig -largp -lc++
 endif
 
-INCLUDES = -I /usr/local/include -I rhic/rhic-core/src/include -I rhic/rhic-harness/src/main/include -I rhic/rhic-trunk/src/include -I rhic/rhic-harness/src/include -I freezeout
+INCLUDES = -I /usr/local/include -I rhic/rhic-core/src/include \
+				-I rhic/rhic-harness/src/main/include -I rhic/rhic-trunk/src/include \
+				-I rhic/rhic-harness/src/include -I rhic/freezeout -I rhic/freezeout/cornelius-c++-1.3
 
 CPP := $(shell find $(DIR_SRC) -name '*.cpp' -and -not -name '*Test.cpp' )
 CPP_OBJ  = $(CPP:$(DIR_SRC)%.cpp=$(DIR_OBJ)%.o)
@@ -43,7 +36,7 @@ $(EXE): $(OBJ)
 	$(COMPILER) $(LINK_OPTIONS) -o $@ $^ $(LIBS) $(INCLUDES)
 
 $(DIR_OBJ)%.o: $(DIR_SRC)%.cpp
-	@[ -d $(DIR_OBJ) ] || find rhic/rhic-core rhic/rhic-harness rhic/rhic-trunk -type d -exec mkdir -p ./build/{} \;
+	@[ -d $(DIR_OBJ) ] || find rhic/freezeout rhic/rhic-core rhic/rhic-harness rhic/rhic-trunk -type d -exec mkdir -p ./build/{} \;
 	@echo "Compiling: $< ($(COMPILER))"
 	$(COMPILER) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 

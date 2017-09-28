@@ -14,9 +14,9 @@
 
 //for cornelius and writing freezeout file
 #include <fstream>
-#include "cornelius-c++-1.3/cornelius.cpp"
-#include "FreezeOut.cpp"
-#include "Memory.cpp"
+#include "cornelius.h"
+#include "FreezeOut.h"
+#include "Memory.h"
 
 #include "edu/osu/rhic/harness/hydro/HydroPlugin.h"
 #include "edu/osu/rhic/trunk/hydro/DynamicalVariables.h"

@@ -1,0 +1,124 @@
+language: cpp
+
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    # Trusty, Clang 5, Container-based
+    - os: linux
+      distro: trusty 
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - libgsl0-dev
+            - libconfig-dev
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+
+    # Trusty, Clang 3.9, Container-based
+    - os: linux
+      distro: trusty 
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-3.9
+          packages:
+            - libgsl0-dev
+            - libconfig-dev
+            - clang-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+
+    # Trusty/Precise, GCC 4.9, Container-based
+    - os: linux
+      distro:
+        - trusty
+        - precise
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgsl0-dev
+            - libconfig-dev
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+    # Trusty/Precise, GCC 7, Container-based
+    - os: linux
+      distro:
+        - trusty
+        - precise
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgsl0-dev
+            - libconfig-dev
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    
+    # macOS 10.12, Clang ??? 
+    - os: osx
+      osx_image: xcode9
+      before_install:
+        - brew install gsl
+        - brew install libconfig
+        - brew install argp-standalone
+    
+    # macOS 10.12, GCC 4.9
+    - os: osx
+      osx_image: xcode9
+      before_install:
+        - brew install gsl
+        - brew install libconfig
+        - brew install argp-standalone
+        - brew install gcc49 || brew link --overwrite gcc49
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+    
+    # macOS 10.12, GCC 7
+    - os: osx
+      osx_image: xcode9
+      before_install:
+        - brew install gsl
+        - brew install libconfig
+        - brew install argp-standalone
+        - brew install --force gcc || brew link --overwrite gcc
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+env:
+  global:
+    - LIBRARY_PATH=${LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/gtlib/googlemock/gtest
+    - CPATH=${CPATH}:${TRAVIS_BUILD_DIR}/googletest-release-1.8.0/googletest/include
+
+before_script:
+  - eval "${MATRIX_EVAL}"
+  - wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+  - tar xvf release-1.8.0.tar.gz
+  - mkdir gtlib
+  - cd gtlib
+  - cmake ../googletest-release-1.8.0
+  - make
+  - cd ../
+
+install: true
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -f MakefileOSX; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make; fi
+
+after_success: ./cpu-vh -c rhic-conf -t

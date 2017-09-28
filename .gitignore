@@ -1,0 +1,18 @@
+# Directories first
+output/*
+scripts/links/*
+build/*
+
+# Specific filenames
+cpu-vh
+tags
+
+# Globbed filenames
+*#*
+*~*
+*.o
+*.so
+*.a
+*.out
+*.exe
+*.pch
