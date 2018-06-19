@@ -143,8 +143,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 
   //open the freezeout surface file
   ofstream freezeoutSurfaceFile;
-  if (FOFORMAT == 0) freezeoutSurfaceFile.open("output/surface.dat");
-  else freezeoutSurfaceFile.open("output/surface.dat", ios::binary);
+  std::string surf_fname = std::string(outputDir) + std::string("/surface.dat");
+  if (FOFORMAT == 0) freezeoutSurfaceFile.open(surf_fname);
+  else freezeoutSurfaceFile.open(surf_fname, ios::binary);
   /************************************************************************************	\
   * Fluid dynamic initialization
   /************************************************************************************/
