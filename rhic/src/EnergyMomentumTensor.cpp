@@ -12,7 +12,7 @@
 
 #include "../include/FullyDiscreteKurganovTadmorScheme.h" // for const params
 #include "../include/EquationOfState.h"
- 
+
 #define MAX_ITERS 10000000
 //const PRECISION ACC = 1e-2;
 
@@ -45,7 +45,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 }
 
 void getInferredVariables(PRECISION t, const PRECISION * const __restrict__ q, PRECISION ePrev,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 PRECISION * const __restrict__ ut, PRECISION * const __restrict__ ux, PRECISION * const __restrict__ uy, PRECISION * const __restrict__ un
 ) {
 	PRECISION ttt = q[0];
@@ -135,8 +135,8 @@ PRECISION * const __restrict__ ut, PRECISION * const __restrict__ ux, PRECISION 
 	*un = M3 * E2;
 }
 
-void setInferredVariablesKernel(const CONSERVED_VARIABLES * const __restrict__ q, 
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, FLUID_VELOCITY * const __restrict__ u, 
+void setInferredVariablesKernel(const CONSERVED_VARIABLES * const __restrict__ q,
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, FLUID_VELOCITY * const __restrict__ u,
 PRECISION t, void * latticeParams
 ) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
@@ -146,8 +146,13 @@ PRECISION t, void * latticeParams
 	ncy = lattice->numComputationalLatticePointsY;
 	ncz = lattice->numComputationalLatticePointsRapidity;
 
+  #pragma omp parallel for collapse(3)
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 
@@ -167,8 +172,8 @@ PRECISION t, void * latticeParams
 				q_s[10] = q->pixn[s];
 				q_s[11] = q->piyy[s];
 				q_s[12] = q->piyn[s];
-				q_s[13] = q->pinn[s];	
-/****************************************************************************/	
+				q_s[13] = q->pinn[s];
+/****************************************************************************/
 #endif
 #ifdef PI
 				q_s[14] = q->Pi[s];
@@ -195,7 +200,7 @@ PRECISION Ttt(PRECISION e, PRECISION p, PRECISION ut, PRECISION pitt) {
 PRECISION Ttx(PRECISION e, PRECISION p, PRECISION ut, PRECISION ux, PRECISION pitx) {
 	return (e+p)*ut*ux+pitx;
 }
- 
+
 PRECISION Tty(PRECISION e, PRECISION p, PRECISION ut, PRECISION uy, PRECISION pity) {
 	return (e+p)*ut*uy+pity;
 }
@@ -203,7 +208,7 @@ PRECISION Tty(PRECISION e, PRECISION p, PRECISION ut, PRECISION uy, PRECISION pi
 PRECISION Ttn(PRECISION e, PRECISION p, PRECISION ut, PRECISION un, PRECISION pitn) {
 	return (e+p)*ut*un+pitn;
 }
- 
+
 PRECISION Txx(PRECISION e, PRECISION p, PRECISION ux, PRECISION pixx) {
 	return (e+p)*ux*ux+p+pixx;
 }
@@ -223,8 +228,7 @@ PRECISION Tyy(PRECISION e, PRECISION p, PRECISION uy, PRECISION piyy) {
 PRECISION Tyn(PRECISION e, PRECISION p, PRECISION uy, PRECISION un, PRECISION piyn) {
 	return (e+p)*uy*un+piyn;
 }
- 
+
 PRECISION Tnn(PRECISION e, PRECISION p, PRECISION un, PRECISION pinn, PRECISION t) {
 	return (e+p)*un*un+p/t/t+pinn;
 }
-

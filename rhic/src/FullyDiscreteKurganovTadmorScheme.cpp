@@ -156,13 +156,14 @@ const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __restrict__ up,
 int ncx, int ncy, int ncz, PRECISION dt, PRECISION dx, PRECISION dy, PRECISION dz, PRECISION etabar
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
+
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 				PRECISION Q[NUMBER_CONSERVED_VARIABLES];
@@ -228,13 +229,13 @@ const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e,
 int ncx, int ncy, int ncz, PRECISION dt, PRECISION dx
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 				PRECISION I[5 * NUMBER_CONSERVED_VARIABLES];
@@ -341,13 +342,13 @@ const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e,
 int ncx, int ncy, int ncz, PRECISION dt, PRECISION dy
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 				PRECISION J[5* NUMBER_CONSERVED_VARIABLES];
@@ -453,13 +454,13 @@ const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e,
 int ncx, int ncy, int ncz, PRECISION dt, PRECISION dz
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 				PRECISION K[5 * NUMBER_CONSERVED_VARIABLES];
@@ -567,13 +568,13 @@ int ncx, int ncy, int ncz, PRECISION dt, PRECISION dz
 void convexCombinationEulerStepKernel(const CONSERVED_VARIABLES * const __restrict__ q, CONSERVED_VARIABLES * const __restrict__ Q,
 int ncx, int ncy, int ncz
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 				Q->ttt[s] += q->ttt[s];
@@ -624,13 +625,13 @@ const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 const FLUID_VELOCITY * const __restrict__ u,
 int ncx, int ncy, int ncz
 ) {
-	//#ifdef SIMD
-	//#pragma omp parallel for simd collapse(3)
-	//#else
 	#pragma omp parallel for collapse(3)
-	//#endif
+	#ifdef TILE
+	#pragma unroll_and_jam
+	#endif
 	for(int i = 2; i < ncx-2; ++i) {
 		for(int j = 2; j < ncy-2; ++j) {
+			//#pragma omp parallel for
 			for(int k = 2; k < ncz-2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
 

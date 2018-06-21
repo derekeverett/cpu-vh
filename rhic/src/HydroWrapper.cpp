@@ -59,6 +59,11 @@ int HYDRO::run_hydro(int argc, char **argv)
 	loadHydroParameters(&hydroConfig, cli.configDirectory, &hydroParams);
 	config_destroy (&hydroConfig);
 
+  //clock
+  double sec = 0.0;
+  #ifdef _OPENMP
+  sec = omp_get_wtime();
+  #endif
 	//=========================================
 	// Run hydro
 	//=========================================
@@ -66,6 +71,11 @@ int HYDRO::run_hydro(int argc, char **argv)
 		run(&latticeParams, &initCondParams, &hydroParams, rootDirectory, cli.outputDirectory);
 		printf("Done hydro.\n");
 	}
+  //clock
+  #ifdef _OPENMP
+  sec = omp_get_wtime() - sec;
+  #endif
+  printf("Hydro took %f seconds\n", sec);
 
 	// TODO: Probably should free host memory here since the freezeout plugin will need
 	// to access the energy density, pressure, and fluid velocity.

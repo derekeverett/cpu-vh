@@ -40,7 +40,7 @@ inline PRECISION bulkViscosityToEntropyDensity(PRECISION T) {
 		return LAMBDA_1*exp(-(x-1)/SIGMA_1) + LAMBDA_2*exp(-(x-1)/SIGMA_2)+0.001;
 	else if(x < 0.995)
 		return LAMBDA_3*exp((x-1)/SIGMA_3)+ LAMBDA_4*exp((x-1)/SIGMA_4)+0.03;
-	else 
+	else
 		return A_1*x*x + A_2*x - A_3;
 }
 
@@ -62,7 +62,7 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 	/*********************************************************\
 	 * Temperature dependent shear transport coefficients
 	/*********************************************************/
-	PRECISION T = effectiveTemperature(e);	
+	PRECISION T = effectiveTemperature(e);
 	PRECISION taupiInv = T / 5  / d_etabar;
 	PRECISION beta_pi = (e + p) / 5;
 
@@ -84,7 +84,7 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 	PRECISION t3 = t*t2;
 
 	// time derivatives of u
-	PRECISION dtut = (ut - utp) / d_dt;	
+	PRECISION dtut = (ut - utp) / d_dt;
 	PRECISION dtux = (ux - uxp) / d_dt;
 	PRECISION dtuy = (uy - uyp) / d_dt;
 	PRECISION dtun = (un - unp) / d_dt;
@@ -133,7 +133,7 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 	PRECISION wxy = (dyux - dxuy) / 2 + (uy * dux - ux * duy) / 2;
 	PRECISION wxn = (dnux - t2 * dxun) / 2 + (t2 * un * dux - ux * Dun) / 2;
 	PRECISION wyn = (dnuy - t2 * dyun) / 2 + (t2 * un * duy - uy * Dun) / 2;
-	// anti-symmetric vorticity components 
+	// anti-symmetric vorticity components
 	PRECISION wxt = wtx;
 	PRECISION wyt = wty;
 	PRECISION wnt = wtn / t2;
@@ -196,7 +196,7 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 			- t2 * (pitn * sxn + pixn * stn) / 2 + (ut * ux) * ps / 3;
 	PRECISION I4ty = (pitt * sty + pity * stt) / 2 - (pitx * sxy + pixy * stx) / 2 - (pity * syy + piyy * sty) / 2
 			- t2 * (pitn * syn + piyn * stn) / 2 + (ut * uy) * ps / 3;
-	PRECISION I4tn = (pitt * stn + pitn * stt) / 2 - (pitx * sxn + pixn * stx) / 2 - (pity * syn + piyn * sty) / 2 
+	PRECISION I4tn = (pitt * stn + pitn * stt) / 2 - (pitx * sxn + pixn * stx) / 2 - (pity * syn + piyn * sty) / 2
 			- t2 * (pitn * snn + pinn * stn) / 2 + (ut * un) * ps / 3;
 	PRECISION I4xx = (pitx * stx - pixx * sxx - pixy * sxy - t2 * pixn * sxn) + (1 + ux2) * ps / 3;
 	PRECISION I4xy = (pitx * sty + pity * stx) / 2	- (pixx * sxy + pixy * sxx) / 2 - (pixy * syy + piyy * sxy) / 2
@@ -287,7 +287,7 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 #endif
 }
 
-/***************************************************************************************************************************************************/ 
+/***************************************************************************************************************************************************/
 void loadSourceTermsX(const PRECISION * const __restrict__ I, PRECISION * const __restrict__ S, const FLUID_VELOCITY * const __restrict__ u, int s,
 PRECISION d_dx
 ) {
@@ -299,7 +299,7 @@ PRECISION d_dx
 	PRECISION dxpitt = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
 	PRECISION dxpitx = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
 	PRECISION dxpity = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
-	PRECISION dxpitn = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;	 
+	PRECISION dxpitn = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
 	PRECISION dxpixx = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
 	PRECISION dxpixy = (*(I + ptr + 3) - *(I + ptr + 1)) *facX;	ptr+=5;
 	PRECISION dxpixn = (*(I + ptr + 3) - *(I + ptr + 1)) *facX; ptr+=20;
@@ -334,7 +334,7 @@ PRECISION d_dy
 	PRECISION dypitt = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=5;
 	PRECISION dypitx = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=5;
 	PRECISION dypity = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=5;
-	PRECISION dypitn = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=10;	 
+	PRECISION dypitn = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=10;
 	PRECISION dypixy = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=10;
 	PRECISION dypiyy = (*(J + ptr + 3) - *(J + ptr + 1)) *facY;	ptr+=5;
 	PRECISION dypiyn = (*(J + ptr + 3) - *(J + ptr + 1)) *facY; ptr+=10;
@@ -369,10 +369,10 @@ PRECISION d_dz
 	PRECISION dnpitt = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=5;
 	PRECISION dnpitx = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=5;
 	PRECISION dnpity = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=5;
-	PRECISION dnpitn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=15; 	 
+	PRECISION dnpitn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=15;
 	PRECISION dnpixn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=10;
 	PRECISION dnpiyn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;	ptr+=5;
-	PRECISION dnpinn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ; ptr+=5; 
+	PRECISION dnpinn = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ; ptr+=5;
 
 	PRECISION ut = u->ut[s];
 	PRECISION un = u->un[s];
@@ -385,7 +385,7 @@ PRECISION d_dz
 	S[0] = dnpitt*vn - dnpitn;
 	S[3] = dnpitn*vn - dnpinn;
 #else
-	PRECISION dnPi = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ; 
+	PRECISION dnPi = (*(K + ptr + 3) - *(K + ptr + 1)) *facZ;
 	S[0] = dnpitt*vn - dnpitn - vn*dnPi;
 	S[3] = dnpitn*vn - dnpinn - dnPi/pow(t,2);
 #endif
@@ -399,7 +399,7 @@ PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec,
 int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PRECISION d_dx, PRECISION d_dy, PRECISION d_dz
 ) {
 	//=========================================================
-	// conserved variables	
+	// conserved variables
 	//=========================================================
 	PRECISION ttt = Q[0];
 	PRECISION ttx = Q[1];
@@ -441,7 +441,7 @@ int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PREC
 	PRECISION *uxvec = u->ux;
 	PRECISION *uyvec = u->uy;
 	PRECISION *unvec = u->un;
-	
+
 	PRECISION p = pvec[s];
 	PRECISION ut = utvec[s];
 	PRECISION ux = uxvec[s];
@@ -465,7 +465,7 @@ int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PREC
 	PRECISION dyuy = (*(uyvec + s + d_ncx) - *(uyvec + s - d_ncx)) * facY;
 	PRECISION dyun = (*(unvec + s + d_ncx) - *(unvec + s - d_ncx)) * facY;
 	// dn of u^{\mu} components
-	int stride = d_ncx * d_ncy; 
+	int stride = d_ncx * d_ncy;
 	PRECISION dnut = (*(utvec + s + stride) - *(utvec + s - stride)) * facZ;
 	PRECISION dnux = (*(uxvec + s + stride) - *(uxvec + s - stride)) * facZ;
 	PRECISION dnuy = (*(uyvec + s + stride) - *(uyvec + s - stride)) * facZ;
@@ -505,7 +505,7 @@ int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PREC
 	setPimunuSourceTerms(pimunuRHS, t, e, p, ut, ux, uy, un, utp, uxp, uyp, unp,
 			pitt, pitx, pity, pitn, pixx, pixy, pixn, piyy, piyn, pinn, Pi,
 			dxut, dyut, dnut, dxux, dyux, dnux, dxuy, dyuy, dnuy, dxun, dyun, dnun, dkvk, d_etabar, d_dt);
-	for(unsigned int n = 0; n < NUMBER_DISSIPATIVE_CURRENTS; ++n) S[n+4] = pimunuRHS[n];		
-#endif		
+			
+	for (unsigned int n = 0; n < NUMBER_DISSIPATIVE_CURRENTS; ++n) S[n+4] = pimunuRHS[n];
+#endif
 }
-

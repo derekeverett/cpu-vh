@@ -1,4 +1,5 @@
 #include "../rhic/include/DynamicalVariables.h"
+#include "../rhic/include/FullyDiscreteKurganovTadmorScheme.h"
 
 //return a 4 dimensional linear interpolation inside the hypercube, given the values
 //on the corners (a0000 through a1111) and edge lengths x0 through x3
@@ -51,6 +52,9 @@ void swapAndSetHydroVariables(double ****energy_density_evoution, double *****hy
                               FLUID_VELOCITY * const __restrict__ u, int nx, int ny, int nz, int FOFREQ)
 {
   #pragma omp parallel for collapse(3)
+  #ifdef TILE
+	#pragma unroll_and_jam
+	#endif
   for (int ix = 2; ix < nx+2; ix++)
   {
     for (int iy = 2; iy < ny+2; iy++)
@@ -110,6 +114,9 @@ void setHydroVariables(double ****energy_density_evoution, double *****hydrodyna
 {
   int nFO = n % FOFREQ;
   #pragma omp parallel for collapse(3)
+  #ifdef TILE
+	#pragma unroll_and_jam
+	#endif
   for (int ix = 2; ix < nx+2; ix++)
   {
     for (int iy = 2; iy < ny+2; iy++)
