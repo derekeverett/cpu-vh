@@ -17,6 +17,8 @@
 
 #include "../include/EquationOfState.h" // for bulk terms
 
+#include "../include/DynamicalSources.h"
+
 //#define USE_CARTESIAN_COORDINATES
 
 // paramters for the analytic parameterization of the bulk viscosity \zeta/S
@@ -486,10 +488,10 @@ int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PREC
 	PRECISION dyvy = (dyuy - vy * dyut)/ ut;
 	PRECISION dnvn = (dnun - vn * dnut)/ ut;
 	PRECISION dkvk = dxvx + dyvy + dnvn;
-	S[0] = -(ttt / t + t * tnn) + dkvk*(pitt-p-Pi) - vx*dxp - vy*dyp - vn*dnp;
-	S[1] = -ttx/t -dxp + dkvk*pitx;
-	S[2] = -tty/t -dyp + dkvk*pity;
-	S[3] = -3*ttn/t -dnp/pow(t,2) + dkvk*pitn;
+	S[0] = Source->sourcet[s]-(ttt / t + t * tnn) + dkvk*(pitt-p-Pi) - vx*dxp - vy*dyp - vn*dnp;
+	S[1] = Source->sourcex[s]-ttx/t -dxp + dkvk*pitx;
+	S[2] = Source->sourcey[s]-tty/t -dyp + dkvk*pity;
+	S[3] = Source->sourcen[s]-3*ttn/t -dnp/pow(t,2) + dkvk*pitn;
 #ifdef USE_CARTESIAN_COORDINATES
 	S[0] = dkvk*(pitt-p-Pi) - vx*dxp - vy*dyp - vn*dnp;
 	S[1] = -dxp + dkvk*pitx;

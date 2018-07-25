@@ -1,1 +1,0 @@
-/home/derek/MEGA/hydro-resources/cpu-vh-with-fo/scripts/../rhic/rhic-harness/src/test/cpp/edu/osu/rhic/harness/ic/InitialConditionParameterTest.cpp

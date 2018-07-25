@@ -620,6 +620,90 @@ void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void
 	}
 }
 
+
+//*********************************************************************************************************\
+//* Initial conditions for hydro with dynamical sources
+//*********************************************************************************************************/
+void setICfromSource(void * latticeParams, void * initCondParams, void * hydroParams, const char * rootDirectory){
+    
+    struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
+    struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
+    struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
+    
+    double initialEnergyDensity = initCond->initialEnergyDensity;
+    
+    int ncx = lattice->numComputationalLatticePointsX;
+    int ncy = lattice->numComputationalLatticePointsY;
+    int ncz = lattice->numComputationalLatticePointsRapidity;
+    
+    int nx = lattice->numLatticePointsX;
+    int ny = lattice->numLatticePointsY;
+    int nz = lattice->numLatticePointsRapidity;
+    
+    double dx = lattice->latticeSpacingX;
+    double dy = lattice->latticeSpacingY;
+    double dz = lattice->latticeSpacingRapidity;
+    double t0 = hydro->initialProperTimePoint;
+    
+    //==================================================
+    // Initialize to vacuum
+    //==================================================
+    
+    printf("initialized to be vaccum \n");
+    
+    double ed = initialEnergyDensity;
+    double pd = equilibriumPressure(ed);
+    
+    //--------------------------------------------------
+    // Initialize energy, baryon and pressure density, also
+    // shear, bulk, flow velocity and baryon diffusion current
+    //--------------------------------------------------
+    
+    printf("Initialize \\pi^\\mu\\nu to zero.\n");
+    printf("Initialize \\nb^\\mu to zero.\n");
+    
+    for(int i = 2; i < nx+2; ++i) {
+        for(int j = 2; j < ny+2; ++j) {
+            for(int k = 2; k < nz+2; ++k) {
+                int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                
+                e[s] = (PRECISION) ed;
+                p[s] = pd;
+                
+                PRECISION ux = 0;
+                PRECISION uy = 0;
+                PRECISION un = 0;
+                
+                u->ux[s] = 0;
+                u->uy[s] = 0;
+                u->un[s] = 0;
+                u->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
+                
+                up->ux[s] = 0;
+                up->uy[s] = 0;
+                up->un[s] = 0;
+                up->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
+#ifdef PIMUNU
+                q->pitt[s] = 0;
+                q->pitx[s] = 0;
+                q->pity[s] = 0;
+                q->pitn[s] = 0;
+                q->pixx[s] = 0;
+                q->pixy[s] = 0;
+                q->pixn[s] = 0;
+                q->piyy[s] = 0;
+                q->piyn[s] = 0;
+                q->pinn[s] = 0;
+#endif
+#ifdef PI
+                q->Pi[s] = 0;
+#endif
+            }
+        }
+    }
+}
+
+
 /*********************************************************************************************************\
  * Constant initial energy density distribution
 /*********************************************************************************************************/
@@ -1209,15 +1293,20 @@ void setInitialConditions(void * latticeParams, void * initCondParams, void * hy
 			return;
 		}
 		case 10: {
-      printf("Reading initial T ^mu nu from input/e.dat , input/p.dat , etc... \n");
-      setInitialTmunuFromFiles(latticeParams, initCondParams, hydroParams, rootDirectory);
-      return;
-    }
-    case 11: {
-      printf("Reading initial T ^mu nu from /input/Tmunu.dat \n");
-      setInitialTmunuFromFile(latticeParams, initCondParams, hydroParams, rootDirectory);
-      return;
+            printf("Reading initial T ^mu nu from input/e.dat , input/p.dat , etc... \n");
+            setInitialTmunuFromFiles(latticeParams, initCondParams, hydroParams, rootDirectory);
+            return;
+        }
+        case 11: {
+            printf("Reading initial T ^mu nu from /input/Tmunu.dat \n");
+            setInitialTmunuFromFile(latticeParams, initCondParams, hydroParams, rootDirectory);
+            return;
 		}
+        case 12:{
+            printf("Hydro with dynamical sources...\n");
+            setICfromSource(latticeParams, initCondParams, hydroParams, rootDirectory);
+            return;
+        }
 		default: {
 			printf("Initial condition type not defined. Exiting ...\n");
 			exit(-1);

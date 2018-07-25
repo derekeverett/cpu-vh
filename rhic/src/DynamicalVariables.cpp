@@ -19,6 +19,8 @@ FLUID_VELOCITY *u,*up,*uS;
 
 PRECISION *e, *p;
 
+DYNAMICAL_SOURCE *Source;
+
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny) {
 	return i + nx * (j + ny * k);
 }
@@ -26,6 +28,14 @@ int columnMajorLinearIndex(int i, int j, int k, int nx, int ny) {
 void allocateHostMemory(int len) {
 	size_t bytes = sizeof(PRECISION);
 
+    // dynamical source terms
+    Source = (DYNAMICAL_SOURCE *)calloc(1, sizeof(DYNAMICAL_SOURCE));
+    Source->sourcet = (PRECISION *)calloc(len, bytes);
+    Source->sourcex = (PRECISION *)calloc(len, bytes);
+    Source->sourcey = (PRECISION *)calloc(len, bytes);
+    Source->sourcen = (PRECISION *)calloc(len, bytes);
+    Source->sourceb = (PRECISION *)calloc(len, bytes);
+    
 	//=======================================================
 	// Primary variables
 	//=======================================================
@@ -331,6 +341,13 @@ void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2) {
 }
 
 void freeHostMemory() {
+    
+    free(Source->sourcet);
+    free(Source->sourcex);
+    free(Source->sourcey);
+    free(Source->sourcen);
+    free(Source->sourceb);
+    
 	free(e);
 	free(p);
 	free(u->ut);
