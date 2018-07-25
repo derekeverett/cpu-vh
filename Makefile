@@ -7,12 +7,13 @@ DIR_OBJ        = $(DIR_BUILD)rhic
 DEBUG =
 OPTIMIZATION = -O3
 FLOWTRACE =
-OPTIONS = -fopenmp -march=native -fopt-info-vec #-funroll-loops #-static-libstdc++
-#OPTIONS = -qopenmp -xavx #-static-libstdc++
+#OPTIONS = -fopenmp -march=native -fopt-info-vec #-funroll-loops #-static-libstdc++ # for g++ with vector info 
+OPTIONS = -fopenmp -march=native -std=c++11 # for g++
+#OPTIONS = -qopenmp -xavx #-static-libstdc++ 
 LINK_OPTIONS = -L/home/everett.165/libconfig-1.5/lib/.libs -lconfig -L/home/everett.165/googletest-master/googletest/mybuild/ -lgtest
 CFLAGS = $(DEBUG) $(OPTIMIZATION) $(FLOWTRACE) $(OPTIONS)
 COMPILER = g++
-#COMPILER = icpc
+#COMPILER = icc
 LIBS = -lm -lgsl -lgslcblas -lconfig -lgtest -lgomp
 #LIBS = -lconfig -lgtest
 INCLUDES = -I rhic/include -I /home/everett.165/libconfig-1.5/lib/ -I /home/everett.165/googletest-master/googletest/include/ -I freezeout
