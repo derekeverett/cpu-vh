@@ -8,8 +8,14 @@
 #ifndef FULLYDISCRETEKURGANOVTADMORSCHEME_H_
 #define FULLYDISCRETEKURGANOVTADMORSCHEME_H_
 
-//#define SIMD //for acceleration via vector instructions - See FullyDiscreteKurganovTadmorScheme.cpp and DynamicalVariables.cpp
-#define TILE //for acceleration via memory tiling (cache blocking) - handled by compiler
+
+#define SIMD //for acceleration via vector instructions - See FullyDiscreteKurganovTadmorScheme.cpp and DynamicalVariables.cpp
+
+//#define TILE //for acceleration via memory tiling (cache blocking) - handled by compiler
+//#define TILE_MANUAL //for acceleration via memory tiling (cache blocking) - explicit tile loops
+//#ifdef TILE_MANUAL
+//#define NUM_TILES 100
+//#endif
 
 #include "DynamicalVariables.h"
 

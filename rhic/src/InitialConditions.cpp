@@ -59,7 +59,7 @@ void setInitialTmunuFromFile(void * latticeParams, void * initCondParams, void *
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", &x, &y, &z, &e_in, &p_in, &ut_in, &ux_in, &uy_in, &un_in, &pitt_in, &pitx_in, &pity_in, &pitn_in, &pixx_in, &pixy_in, &pixn_in, &piyy_in, &piyn_in, &pinn_in, &Pi_in);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     e[s] =  (PRECISION) e_in;
                     //ep[s] = (PRECISION) e_in; //set previous step to same value
                     p[s] = p_in;
@@ -119,7 +119,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     e[s] =  (PRECISION) value;
                     //ep[s] = (PRECISION) value;
                     //printf("e [ %d ] = %f\n", s, e[s]);
@@ -142,7 +142,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     p[s] =  (PRECISION) value;
                 }
             }
@@ -163,7 +163,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     u->ut[s] =  (PRECISION) value;
                     up->ut[s] = (PRECISION) value;
                 }
@@ -185,7 +185,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     u->ux[s] =  (PRECISION) value;
                     up->ux[s] = (PRECISION) value;
                 }
@@ -207,7 +207,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     u->uy[s] =  (PRECISION) value;
                     up->uy[s] = (PRECISION) value;
                 }
@@ -229,7 +229,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     u->un[s] =  (PRECISION) value;
                     up->un[s] = (PRECISION) value;
                 }
@@ -252,7 +252,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pitt[s] =  (PRECISION) value;
                 }
             }
@@ -273,7 +273,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pitx[s] =  (PRECISION) value;
                 }
             }
@@ -294,7 +294,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pity[s] =  (PRECISION) value;
                 }
             }
@@ -315,7 +315,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pitn[s] =  (PRECISION) value;
                 }
             }
@@ -336,7 +336,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pixx[s] =  (PRECISION) value;
                 }
             }
@@ -357,7 +357,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pixy[s] =  (PRECISION) value;
                 }
             }
@@ -378,7 +378,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pixn[s] =  (PRECISION) value;
                 }
             }
@@ -399,7 +399,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->piyy[s] =  (PRECISION) value;
                 }
             }
@@ -420,7 +420,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->piyn[s] =  (PRECISION) value;
                 }
             }
@@ -441,7 +441,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->pinn[s] =  (PRECISION) value;
                 }
             }
@@ -463,7 +463,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     q->Pi[s] =  (PRECISION) value;
                 }
             }
@@ -492,7 +492,7 @@ void setFluidVelocityInitialCondition(void * latticeParams, void * hydroParams) 
 	for(int i = 2; i < nx+2; ++i) {
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				PRECISION ux = 0;
 				PRECISION uy = 0;
 				PRECISION un = 0;
@@ -530,7 +530,7 @@ void setPimunuNavierStokesInitialCondition(void * latticeParams, void * initCond
 	for(int i = 2; i < nx+2; ++i) {
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 //				double T = pow(e[s]/e0, 0.25);
 				PRECISION T = effectiveTemperature(e[s]);
 				if (T == 0) T = 1.e-3;
@@ -597,7 +597,7 @@ void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void
 		for(int i = 2; i < nx+2; ++i) {
 			for(int j = 2; j < ny+2; ++j) {
 				for(int k = 2; k < nz+2; ++k) {
-					int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+					int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 #ifdef PIMUNU
 			  		q->pitt[s] = 0;
 			  		q->pitx[s] = 0;
@@ -639,7 +639,7 @@ void setConstantEnergyDensityInitialCondition(void * latticeParams, void * initC
 	for(int i = 2; i < nx+2; ++i) {
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				e[s] = (PRECISION) ed;
 				p[s] = equilibriumPressure(e[s]);
 			}
@@ -763,7 +763,7 @@ void setGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
         double energyDensityTransverse = e0 * eT[i-2+(j-2)*nx];
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				double energyDensityLongitudinal = eL[k-2];
 				double ed = (energyDensityTransverse * energyDensityLongitudinal) + 1.e-3;
 				e[s] = (PRECISION) ed;
@@ -803,7 +803,7 @@ void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
         double energyDensityTransverse = e0 * eT[i-2 + nx*(j-2)];
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				double energyDensityLongitudinal = eL[k-2];
 				double ed = (energyDensityTransverse * energyDensityLongitudinal) + 1.e-3;
 				e[s] = (PRECISION) ed;
@@ -841,7 +841,7 @@ void setIdealGubserInitialCondition(void * latticeParams, void * initCondParams)
 			double phi = atanh(2*1*r/(1+1+x*x+y*y));
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				e[s] = (PRECISION) (e0 * pow(T,4));
 				p[s] = e[s]/3;
@@ -885,7 +885,7 @@ void setISGubserInitialCondition(void * latticeParams, const char *rootDirectory
 			int status = fscanf(file,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
 		    		&x,&y,&ed,&u1,&u2,&pixx,&piyy,&pixy,&pitt,&pitx,&pity,&pinn);
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				e[s] = (PRECISION) ed;
 				p[s] = e[s]/3;
@@ -934,7 +934,7 @@ void setSodShockTubeInitialCondition(void * latticeParams, void * initCondParams
 			double y = (j-2 - (ny-1)/2.)*dy;
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				if(x > 0) 	e[s] = (PRECISION) (0.00778147);
 				else 			e[s] = (PRECISION) (0.124503);
 //				if(y > 0) 	e[s] = (PRECISION) (0.00778147);
@@ -975,7 +975,7 @@ void set2dSodShockTubeInitialCondition(void * latticeParams, void * initCondPara
 			double y = (j-2 - (ny-1)/2.)*dy;
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				if(y > x) 	e[s] = (PRECISION) (0.00778147);
 //				if(atan(y/x)>0.7853981634) 	e[s] = (PRECISION) (0.00778147);
 				else 			e[s] = (PRECISION) (0.124503);
@@ -1013,7 +1013,7 @@ void setImplosionBoxInitialCondition(void * latticeParams, void * initCondParams
 			double y = (j-2 - (ny-1)/2.)*dy;
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 //				e[s] = (PRECISION) (0.00778147);
 //				if (sqrt(x*x+y*y)<=0.15) e[s] = (PRECISION) (0.124503);
 
@@ -1065,7 +1065,7 @@ void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * i
 			double y = (j-2 - (ny-1)/2.)*dy;
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				double gasGamma = 1.4;
 				double gravity = 0.1;
@@ -1115,7 +1115,7 @@ void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParam
 			double y = (j-2 - (ny-1)/2.)*dy;
 
 			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				double xc = 0.5;
 				double yc = 0.5;

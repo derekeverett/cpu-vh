@@ -157,15 +157,85 @@ const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __rest
 int ncx, int ncy, int ncz, PRECISION dt, PRECISION dx, PRECISION dy, PRECISION dz, PRECISION etabar
 ) {
 
+/*
+#ifdef TILE_MANUAL
+
+int dim = (ncx-4)*(ncy-4)*(ncz-4);
+int tilesize = dim / NUM_TILES;
+
+#pragma omp parallel for
+for (int itile = 0; itile < NUM_TILES; itile++)
+{
+	for (int s_loc = 0; s_loc < tilesize; s_loc++) //local tile index
+	{
+		int s = s_loc + itile * tilesize;
+		PRECISION Q[NUMBER_CONSERVED_VARIABLES];
+		PRECISION S[NUMBER_CONSERVED_VARIABLES];
+
+		Q[0] = currrentVars->ttt[s];
+		Q[1] = currrentVars->ttx[s];
+		Q[2] = currrentVars->tty[s];
+		Q[3] = currrentVars->ttn[s];
+		#ifdef PIMUNU
+		Q[4] = currrentVars->pitt[s];
+		Q[5] = currrentVars->pitx[s];
+		Q[6] = currrentVars->pity[s];
+		Q[7] = currrentVars->pitn[s];
+		Q[8] = currrentVars->pixx[s];
+		Q[9] = currrentVars->pixy[s];
+		Q[10] = currrentVars->pixn[s];
+		Q[11] = currrentVars->piyy[s];
+		Q[12] = currrentVars->piyn[s];
+		Q[13] = currrentVars->pinn[s];
+		#endif
+		#ifdef PI
+		Q[14] = currrentVars->Pi[s];
+		#endif
+
+		loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e[s], p, s, ncx, ncy, ncz, etabar, dt, dx, dy, dz);
+
+		PRECISION result[NUMBER_CONSERVED_VARIABLES];
+		#ifdef SIMD
+		#pragma omp simd
+		#endif
+		for (unsigned int n = 0; n < NUMBER_CONSERVED_VARIABLES; ++n)
+		{
+			*(result+n) = *(Q+n) + dt * ( *(S+n) );
+		}
+
+		updatedVars->ttt[s] = result[0];
+		updatedVars->ttx[s] = result[1];
+		updatedVars->tty[s] = result[2];
+		updatedVars->ttn[s] = result[3];
+		#ifdef PIMUNU
+		updatedVars->pitt[s] = result[4];
+		updatedVars->pitx[s] = result[5];
+		updatedVars->pity[s] = result[6];
+		updatedVars->pitn[s] = result[7];
+		updatedVars->pixx[s] = result[8];
+		updatedVars->pixy[s] = result[9];
+		updatedVars->pixn[s] = result[10];
+		updatedVars->piyy[s] = result[11];
+		updatedVars->piyn[s] = result[12];
+		updatedVars->pinn[s] = result[13];
+		#endif
+		#ifdef PI
+		updatedVars->Pi[s] = result[14];
+		#endif
+	}//s
+} //tile
+*/
+
+
+//#else
 	#pragma omp parallel for collapse(3)
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 				PRECISION Q[NUMBER_CONSERVED_VARIABLES];
 				PRECISION S[NUMBER_CONSERVED_VARIABLES];
 
@@ -222,6 +292,7 @@ int ncx, int ncy, int ncz, PRECISION dt, PRECISION dx, PRECISION dy, PRECISION d
 			}
 		}
 	}
+	//#endif
 }
 
 void eulerStepKernelX(PRECISION t,
@@ -233,11 +304,10 @@ int ncx, int ncy, int ncz, PRECISION dt, PRECISION dx
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 				PRECISION I[5 * NUMBER_CONSERVED_VARIABLES];
 				PRECISION H[NUMBER_CONSERVED_VARIABLES];
 
@@ -346,11 +416,10 @@ int ncx, int ncy, int ncz, PRECISION dt, PRECISION dy
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 				PRECISION J[5* NUMBER_CONSERVED_VARIABLES];
 				PRECISION H[NUMBER_CONSERVED_VARIABLES];
 
@@ -458,11 +527,10 @@ int ncx, int ncy, int ncz, PRECISION dt, PRECISION dz
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 				PRECISION K[5 * NUMBER_CONSERVED_VARIABLES];
 				PRECISION H[NUMBER_CONSERVED_VARIABLES];
 
@@ -572,11 +640,10 @@ int ncx, int ncy, int ncz
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 				Q->ttt[s] += q->ttt[s];
 				Q->ttt[s] /= 2;
 				Q->ttx[s] += q->ttx[s];
@@ -629,11 +696,10 @@ int ncx, int ncy, int ncz
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 
 #ifdef PIMUNU
 				PRECISION pitt = currentVars->pitt[s];

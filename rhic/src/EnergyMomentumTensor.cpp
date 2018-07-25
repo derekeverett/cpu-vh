@@ -150,11 +150,10 @@ PRECISION t, void * latticeParams
 	#ifdef TILE
 	#pragma unroll_and_jam
 	#endif
-	for(int i = 2; i < ncx-2; ++i) {
+	for(int k = 2; k < ncz-2; ++k) {
 		for(int j = 2; j < ncy-2; ++j) {
-			//#pragma omp parallel for
-			for(int k = 2; k < ncz-2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+			for(int i = 2; i < ncx-2; ++i) {
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 
 				PRECISION q_s[NUMBER_CONSERVED_VARIABLES],_e,_p,ut,ux,uy,un;
 				q_s[0] = q->ttt[s];

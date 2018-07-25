@@ -163,7 +163,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   int ictr = (nx % 2 == 0) ? ncx/2 : (ncx-1)/2;
   int jctr = (ny % 2 == 0) ? ncy/2 : (ncy-1)/2;
   int kctr = (nz % 2 == 0) ? ncz/2 : (ncz-1)/2;
-  int sctr = columnMajorLinearIndex(ictr, jctr, kctr, ncx, ncy);
+  int sctr = columnMajorLinearIndex(ictr, jctr, kctr, ncx, ncy, ncz);
 
   std::clock_t t1,t2;
 
@@ -414,7 +414,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
       {
         for (int iz = 2; iz < nz+2; iz++)
         {
-          int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4);
+          int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4, nz+4);
           if (e[s] > freezeoutEnergyDensity) accumulator1 = accumulator1 + 1;
         }
       }

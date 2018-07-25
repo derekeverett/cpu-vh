@@ -28,7 +28,11 @@ set (SOURCES
 add_library(cpu-vh_lib SHARED ${SOURCES})
 add_executable(cpu-vh ${SOURCES})
 
-target_link_libraries (cpu-vh_lib ${GSL_LIBRARIES})
-target_link_libraries (cpu-vh ${GSL_LIBRARIES})
+target_link_libraries (cpu-vh_lib ${GSL_LIBRARIES} /home/everett.165/libconfig-1.5/lib/.libs)
+target_link_libraries (cpu-vh ${GSL_LIBRARIES} /home/everett.165/libconfig-1.5/lib/.libs)
+
+#libconfig not working yet
+#target_link_libraries (cpu-vh_lib ${GSL_LIBRARIES} /home/everett.165/libconfig-1.5/lib/.libs)
+#target_link_libraries (cpu-vh ${GSL_LIBRARIES} /home/everett.165/libconfig-1.5/lib/.libs)
 
 install(TARGETS cpu-vh DESTINATION ${CMAKE_HOME_DIRECTORY})

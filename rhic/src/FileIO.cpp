@@ -49,7 +49,7 @@ void output(const PRECISION * const var, double t, const char *pathToOutDir, con
 			y = (j-2 - (ny-1)/2.)*dy;
 			for(i = 2; i < nx+2; ++i) {
 				x = (i-2 - (nx-1)/2.)*dx;
-				s = columnMajorLinearIndex(i, j, k, nx+4, ny+4);
+				s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				fprintf(fp, "%.3f\t%.3f\t%.3f\t%.8f\n",x,y,z,var[s]);
 			}
 		}

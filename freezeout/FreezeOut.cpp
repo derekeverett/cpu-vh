@@ -61,7 +61,7 @@ void swapAndSetHydroVariables(double ****energy_density_evoution, double *****hy
     {
       for (int iz = 2; iz < nz+2; iz++)
       {
-        int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4);
+        int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4, nz+4);
         //previous hydro variable values written to zeroth index
         energy_density_evoution[0][ix-2][iy-2][iz-2] = energy_density_evoution[FOFREQ][ix-2][iy-2][iz-2];
         hydrodynamic_evoution[0][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[0][FOFREQ][ix-2][iy-2][iz-2];
@@ -123,7 +123,7 @@ void setHydroVariables(double ****energy_density_evoution, double *****hydrodyna
     {
       for (int iz = 2; iz < nz+2; iz++)
       {
-        int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4);
+        int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4, nz+4);
         energy_density_evoution[nFO+1][ix-2][iy-2][iz-2] = (double)e[s];
         hydrodynamic_evoution[0][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ut[s]);
         hydrodynamic_evoution[1][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);

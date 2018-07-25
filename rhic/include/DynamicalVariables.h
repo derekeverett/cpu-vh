@@ -10,7 +10,7 @@
 
 #define NUMBER_CONSERVATION_LAWS 4
 
-#define PIMUNU 
+#define PIMUNU
 #define PI
 
 /*********************************************************/
@@ -43,7 +43,7 @@
 
 #define PRECISION double
 
-typedef struct 
+typedef struct
 {
 	PRECISION *ttt;
 	PRECISION *ttx;
@@ -66,7 +66,7 @@ typedef struct
 #endif
 } CONSERVED_VARIABLES;
 
-typedef struct 
+typedef struct
 {
 	PRECISION *ut;
 	PRECISION *ux;
@@ -78,7 +78,7 @@ extern CONSERVED_VARIABLES *q,*Q,*qS;
 extern FLUID_VELOCITY *u,*up,*uS,*uSS;
 extern PRECISION *e, *p;
 
-int columnMajorLinearIndex(int i, int j, int k, int nx, int ny);
+int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz);
 
 void allocateHostMemory(int len);
 
@@ -86,23 +86,23 @@ void setConservedVariables(double t, void * latticeParams);
 void setCurrentConservedVariables();
 void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2) ;
 
-void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q, 
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
+void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q,
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q, 
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
+void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q,
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q, 
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
+void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q,
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q, 
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
+void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q,
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 

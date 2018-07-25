@@ -13,14 +13,20 @@
 
 #include <omp.h>
 
+//#define ROW_MAJ
+
 CONSERVED_VARIABLES *q,*Q,*qS;
 
 FLUID_VELOCITY *u,*up,*uS;
 
 PRECISION *e, *p;
 
-int columnMajorLinearIndex(int i, int j, int k, int nx, int ny) {
+int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz) {
+	#ifdef ROW_MAJ
+	return (ny * nz) * i + (nz) * j + k;
+	#else
 	return i + nx * (j + ny * k);
+	#endif
 }
 
 void allocateHostMemory(int len) {
@@ -128,6 +134,7 @@ void setConservedVariables(double t, void * latticeParams) {
 	int nz = lattice->numLatticePointsRapidity;
 	int ncx = lattice->numComputationalLatticePointsX;
 	int ncy = lattice->numComputationalLatticePointsY;
+	int ncz = lattice->numComputationalLatticePointsRapidity;
 
 	#pragma omp parallel for collapse(3)
 	#ifdef TILE
@@ -136,9 +143,8 @@ void setConservedVariables(double t, void * latticeParams) {
 	//#endif
 	for (int k = N_GHOST_CELLS_M; k < nz+N_GHOST_CELLS_M; ++k) {
 		for (int j = N_GHOST_CELLS_M; j < ny+N_GHOST_CELLS_M; ++j) {
-			//#pragma omp parallel for
 			for (int i = N_GHOST_CELLS_M; i < nx+N_GHOST_CELLS_M; ++i) {
-				int s = columnMajorLinearIndex(i, j, k, ncx, ncy);
+				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 
 				PRECISION ux_s = u->ux[s];
 				PRECISION uy_s = u->uy[s];
@@ -232,15 +238,15 @@ FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 			iBC = 2;
 			//#pragma omp parallel for
 			for (int i = 0; i <= 1; ++i) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 			iBC = nx + 1;
 			//#pragma omp parallel for
 			for (int i = nx + 2; i <= nx + 3; ++i) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 		}
@@ -266,15 +272,15 @@ FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 			jBC = 2;
 			//#pragma omp parallel for
 			for (int j = 0; j <= 1; ++j) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 			jBC = ny + 1;
 			//#pragma omp parallel for
 			for (int j = ny + 2; j <= ny + 3; ++j) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 		}
@@ -291,6 +297,7 @@ FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 	nz = lattice->numLatticePointsRapidity;
 	ncx = lattice->numComputationalLatticePointsX;
 	ncy = lattice->numComputationalLatticePointsY;
+	int ncz = lattice->numComputationalLatticePointsRapidity;
 
 	int kBC,s,sBC;
 	#pragma omp parallel for
@@ -299,15 +306,15 @@ FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 			kBC = 2;
 			//#pragma omp parallel for
 			for (int k = 0; k <= 1; ++k) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 			kBC = nz + 1;
 			//#pragma omp parallel for
 			for (int k = nz + 2; k <= nz + 3; ++k) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy);
-				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy);
+				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
 				setGhostCellVars(q,e,p,u,s,sBC);
 			}
 		}
