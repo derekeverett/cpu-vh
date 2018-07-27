@@ -15,6 +15,8 @@ struct InitialConditionParameters
 	int initialConditionType;
 
 	int numberOfNucleonsPerNuclei;
+    
+    int numberOfSourceFiles;
 
 	double initialEnergyDensity;
 	double scatteringCrossSectionNN;
