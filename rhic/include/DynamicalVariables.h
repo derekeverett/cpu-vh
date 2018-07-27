@@ -74,9 +74,19 @@ typedef struct
 	PRECISION *un;
 } FLUID_VELOCITY;
 
+typedef struct
+{
+    PRECISION *sourcet;
+    PRECISION *sourcex;
+    PRECISION *sourcey;
+    PRECISION *sourcen;
+    PRECISION *sourceb;
+} DYNAMICAL_SOURCE;
+
 extern CONSERVED_VARIABLES *q,*Q,*qS;
 extern FLUID_VELOCITY *u,*up,*uS,*uSS;
 extern PRECISION *e, *p;
+extern DYNAMICAL_SOURCE *Source;
 
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz);
 
