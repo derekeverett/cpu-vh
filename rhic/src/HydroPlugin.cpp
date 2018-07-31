@@ -30,6 +30,8 @@
 #include "../include/EquationOfState.h"
 #include "../include/DynamicalSources.h"
 
+#include "../include/Vorticity.h" //for polarization studies
+
 #define FREQ 10 //write output to file every FREQ timesteps
 #define FOFREQ 10 //call freezeout surface finder every FOFREQ timesteps
 #define FOTEST 0 //if true, freezeout surface file is written with proper times rounded (down) to step size
@@ -83,7 +85,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   double dy = lattice->latticeSpacingY;
   double dz = lattice->latticeSpacingRapidity;
   double e0 = initCond->initialEnergyDensity;
-    
+
   int initialConditionType = initCond->initialConditionType;
   int numberOfSourceFiles = initCond->numberOfSourceFiles;
 
@@ -431,13 +433,13 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     }
 
     t1 = std::clock();
-      
+
     // Read in source terms from particles
     if(initialConditionType==12){
         if(n<=numberOfSourceFiles) readInSource(n, latticeParams, initCondParams, hydroParams, rootDirectory);
         else noSource(latticeParams, initCondParams);
     }
-      
+
     rungeKutta2(t, dt, q, Q, latticeParams, hydroParams);
     t2 = std::clock();
     double delta_time = (t2 - t1) / (double)(CLOCKS_PER_SEC / 1000);
@@ -446,6 +448,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     ++nsteps;
 
     setCurrentConservedVariables();
+
+    //calculate the thermal vorticity tensor for use in polarization studies
+    calculateThermalVorticity(t, dt, q, Q, latticeParams, hydroParams);
 
     t = t0 + n * dt;
   }

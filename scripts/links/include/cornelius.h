@@ -1,1 +1,0 @@
-/home/derek/MEGA/hydro-resources/cpu-vh-with-fo/scripts/../rhic/rhic-harness/src/main/cpp/edu/osu/rhic/harness/freezeout/cornelius-c++-1.3/cornelius.h
