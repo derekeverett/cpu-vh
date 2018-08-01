@@ -57,6 +57,14 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   #ifdef PI
   //output(q->Pi, t, outputDir, "Pi", latticeParams);
   #endif
+  #ifdef THERMAL_VORTICITY
+  output(wmunu->wtx, t, outputDir, "wtx", latticeParams);
+  output(wmunu->wty, t, outputDir, "wty", latticeParams);
+  output(wmunu->wtn, t, outputDir, "wtn", latticeParams);
+  output(wmunu->wxy, t, outputDir, "wxy", latticeParams);
+  output(wmunu->wxn, t, outputDir, "wxn", latticeParams);
+  output(wmunu->wyn, t, outputDir, "wyn", latticeParams);
+  #endif
 
 }
 
@@ -395,7 +403,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     #ifdef THERMAL_VORTICITY
     calculateThermalVorticity(t, dt, q, Q, latticeParams, hydroParams);
     #endif
-    
+
     t = t0 + n * dt;
   }
   printf("Average time/step: %.3f ms\n",totalTime/((double)nsteps));
