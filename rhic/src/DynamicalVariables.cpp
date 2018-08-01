@@ -1,9 +1,9 @@
 /*
- * DynamicalVariables.cpp
- *
- *  Created on: Oct 22, 2015
- *      Author: bazow
- */
+* DynamicalVariables.cpp
+*
+*  Created on: Oct 22, 2015
+*      Author: bazow
+*/
 #include <stdlib.h>
 
 #include "../include/DynamicalVariables.h"
@@ -23,6 +23,8 @@ PRECISION *e, *p;
 
 DYNAMICAL_SOURCE *Source;
 
+VORTICITY *wmunu;
+
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz) {
 	#ifdef ROW_MAJ
 	return (ny * nz) * i + (nz) * j + k;
@@ -34,14 +36,25 @@ int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz) {
 void allocateHostMemory(int len) {
 	size_t bytes = sizeof(PRECISION);
 
-    // dynamical source terms
-    Source = (DYNAMICAL_SOURCE *)calloc(1, sizeof(DYNAMICAL_SOURCE));
-    Source->sourcet = (PRECISION *)calloc(len, bytes);
-    Source->sourcex = (PRECISION *)calloc(len, bytes);
-    Source->sourcey = (PRECISION *)calloc(len, bytes);
-    Source->sourcen = (PRECISION *)calloc(len, bytes);
-    Source->sourceb = (PRECISION *)calloc(len, bytes);
-    
+	// dynamical source terms
+	Source = (DYNAMICAL_SOURCE *)calloc(1, sizeof(DYNAMICAL_SOURCE));
+	Source->sourcet = (PRECISION *)calloc(len, bytes);
+	Source->sourcex = (PRECISION *)calloc(len, bytes);
+	Source->sourcey = (PRECISION *)calloc(len, bytes);
+	Source->sourcen = (PRECISION *)calloc(len, bytes);
+	Source->sourceb = (PRECISION *)calloc(len, bytes);
+
+	// thermal vorticity tensor
+	#ifdef THERMAL_VORTICITY
+	wmunu = (VORTICITY *)calloc(1, sizeof(VORTICITY));
+	wmunu->wtx = (PRECISION *)calloc(len, bytes);
+	wmunu->wty = (PRECISION *)calloc(len, bytes);
+	wmunu->wtn = (PRECISION *)calloc(len, bytes);
+	wmunu->wxy = (PRECISION *)calloc(len, bytes);
+	wmunu->wxn = (PRECISION *)calloc(len, bytes);
+	wmunu->wyn = (PRECISION *)calloc(len, bytes);
+	#endif
+
 	//=======================================================
 	// Primary variables
 	//=======================================================
@@ -74,7 +87,7 @@ void allocateHostMemory(int len) {
 	q->ttx = (PRECISION *)calloc(len, bytes);
 	q->tty = (PRECISION *)calloc(len, bytes);
 	q->ttn = (PRECISION *)calloc(len, bytes);
-#ifdef PIMUNU
+	#ifdef PIMUNU
 	q->pitt = (PRECISION *)calloc(len, bytes);
 	q->pitx = (PRECISION *)calloc(len, bytes);
 	q->pity = (PRECISION *)calloc(len, bytes);
@@ -85,18 +98,18 @@ void allocateHostMemory(int len) {
 	q->piyy = (PRECISION *)calloc(len, bytes);
 	q->piyn = (PRECISION *)calloc(len, bytes);
 	q->pinn = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 	// allocate space for \Pi
-#ifdef PI
+	#ifdef PI
 	q->Pi = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 	// upated variables at the n+1 time step
 	Q = (CONSERVED_VARIABLES *)calloc(1, sizeof(CONSERVED_VARIABLES));
 	Q->ttt = (PRECISION *)calloc(len, bytes);
 	Q->ttx = (PRECISION *)calloc(len, bytes);
 	Q->tty = (PRECISION *)calloc(len, bytes);
 	Q->ttn = (PRECISION *)calloc(len, bytes);
-#ifdef PIMUNU
+	#ifdef PIMUNU
 	Q->pitt = (PRECISION *)calloc(len, bytes);
 	Q->pitx = (PRECISION *)calloc(len, bytes);
 	Q->pity = (PRECISION *)calloc(len, bytes);
@@ -107,18 +120,18 @@ void allocateHostMemory(int len) {
 	Q->piyy = (PRECISION *)calloc(len, bytes);
 	Q->piyn = (PRECISION *)calloc(len, bytes);
 	Q->pinn = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 	// allocate space for \Pi
-#ifdef PI
+	#ifdef PI
 	Q->Pi = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 	// updated variables at the intermediate time step
 	qS = (CONSERVED_VARIABLES *)calloc(1, sizeof(CONSERVED_VARIABLES));
 	qS->ttt = (PRECISION *)calloc(len, bytes);
 	qS->ttx = (PRECISION *)calloc(len, bytes);
 	qS->tty = (PRECISION *)calloc(len, bytes);
 	qS->ttn = (PRECISION *)calloc(len, bytes);
-#ifdef PIMUNU
+	#ifdef PIMUNU
 	qS->pitt = (PRECISION *)calloc(len, bytes);
 	qS->pitx = (PRECISION *)calloc(len, bytes);
 	qS->pity = (PRECISION *)calloc(len, bytes);
@@ -129,11 +142,11 @@ void allocateHostMemory(int len) {
 	qS->piyy = (PRECISION *)calloc(len, bytes);
 	qS->piyn = (PRECISION *)calloc(len, bytes);
 	qS->pinn = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 	// allocate space for \Pi
-#ifdef PI
+	#ifdef PI
 	qS->Pi = (PRECISION *)calloc(len, bytes);
-#endif
+	#endif
 }
 
 void setConservedVariables(double t, void * latticeParams) {
@@ -167,16 +180,16 @@ void setConservedVariables(double t, void * latticeParams) {
 				PRECISION pitx_s = 0;
 				PRECISION pity_s = 0;
 				PRECISION pitn_s = 0;
-#ifdef PIMUNU
+				#ifdef PIMUNU
 				pitt_s = q->pitt[s];
 				pitx_s = q->pitx[s];
 				pity_s = q->pity[s];
 				pitn_s = q->pitn[s];
-#endif
+				#endif
 				PRECISION Pi_s = 0;
-#ifdef PI
+				#ifdef PI
 				Pi_s = q->Pi[s];
-#endif
+				#endif
 
 				q->ttt[s] = Ttt(e_s, p_s+Pi_s, ut_s, pitt_s);
 				q->ttx[s] = Ttx(e_s, p_s+Pi_s, ut_s, ux_s, pitx_s);
@@ -188,8 +201,8 @@ void setConservedVariables(double t, void * latticeParams) {
 }
 
 void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
-FLUID_VELOCITY * const __restrict__ u, void * latticeParams
+	PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+	FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 ) {
 	setGhostCellsKernelI(q,e,p,u,latticeParams);
 	setGhostCellsKernelJ(q,e,p,u,latticeParams);
@@ -197,191 +210,191 @@ FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 }
 
 void setGhostCellVars(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
-FLUID_VELOCITY * const __restrict__ u,
-int s, int sBC) {
-	e[s] = e[sBC];
-	p[s] = p[sBC];
-	u->ut[s] = u->ut[sBC];
-	u->ux[s] = u->ux[sBC];
-	u->uy[s] = u->uy[sBC];
-	u->un[s] = u->un[sBC];
-	q->ttt[s] = q->ttt[sBC];
-	q->ttx[s] = q->ttx[sBC];
-	q->tty[s] = q->tty[sBC];
-	q->ttn[s] = q->ttn[sBC];
-	// set \pi^\mu\nu ghost cells if evolved
-#ifdef PIMUNU
-	q->pitt[s] = q->pitt[sBC];
-	q->pitx[s] = q->pitx[sBC];
-	q->pity[s] = q->pity[sBC];
-	q->pitn[s] = q->pitn[sBC];
-	q->pixx[s] = q->pixx[sBC];
-	q->pixy[s] = q->pixy[sBC];
-	q->pixn[s] = q->pixn[sBC];
-	q->piyy[s] = q->piyy[sBC];
-	q->piyn[s] = q->piyn[sBC];
-	q->pinn[s] = q->pinn[sBC];
-#endif
-	// set \Pi ghost cells if evolved
-#ifdef PI
-	q->Pi[s] = q->Pi[sBC];
-#endif
-}
-
-void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
-FLUID_VELOCITY * const __restrict__ u, void * latticeParams
-) {
-	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
-
-	int nx,ncx,ncy,ncz;
-	nx = lattice->numLatticePointsX;
-	ncx = lattice->numComputationalLatticePointsX;
-	ncy = lattice->numComputationalLatticePointsY;
-	ncz = lattice->numComputationalLatticePointsRapidity;
-
-	int iBC,s,sBC;
-	#pragma omp parallel for
-	for(int j = 2; j < ncy; ++j) {
-		for(int k = 2; k < ncz; ++k) {
-			iBC = 2;
-			//#pragma omp parallel for
-			for (int i = 0; i <= 1; ++i) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
-			}
-			iBC = nx + 1;
-			//#pragma omp parallel for
-			for (int i = nx + 2; i <= nx + 3; ++i) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
-			}
-		}
+	PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+	FLUID_VELOCITY * const __restrict__ u,
+	int s, int sBC) {
+		e[s] = e[sBC];
+		p[s] = p[sBC];
+		u->ut[s] = u->ut[sBC];
+		u->ux[s] = u->ux[sBC];
+		u->uy[s] = u->uy[sBC];
+		u->un[s] = u->un[sBC];
+		q->ttt[s] = q->ttt[sBC];
+		q->ttx[s] = q->ttx[sBC];
+		q->tty[s] = q->tty[sBC];
+		q->ttn[s] = q->ttn[sBC];
+		// set \pi^\mu\nu ghost cells if evolved
+		#ifdef PIMUNU
+		q->pitt[s] = q->pitt[sBC];
+		q->pitx[s] = q->pitx[sBC];
+		q->pity[s] = q->pity[sBC];
+		q->pitn[s] = q->pitn[sBC];
+		q->pixx[s] = q->pixx[sBC];
+		q->pixy[s] = q->pixy[sBC];
+		q->pixn[s] = q->pixn[sBC];
+		q->piyy[s] = q->piyy[sBC];
+		q->piyn[s] = q->piyn[sBC];
+		q->pinn[s] = q->pinn[sBC];
+		#endif
+		// set \Pi ghost cells if evolved
+		#ifdef PI
+		q->Pi[s] = q->Pi[sBC];
+		#endif
 	}
-}
 
-void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
-FLUID_VELOCITY * const __restrict__ u, void * latticeParams
-) {
-	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
+	void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q,
+		PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+		FLUID_VELOCITY * const __restrict__ u, void * latticeParams
+	) {
+		struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 
-	int ny,ncx,ncy,ncz;
-	ny = lattice->numLatticePointsY;
-	ncx = lattice->numComputationalLatticePointsX;
-	ncy = lattice->numComputationalLatticePointsY;
-	ncz = lattice->numComputationalLatticePointsRapidity;
+		int nx,ncx,ncy,ncz;
+		nx = lattice->numLatticePointsX;
+		ncx = lattice->numComputationalLatticePointsX;
+		ncy = lattice->numComputationalLatticePointsY;
+		ncz = lattice->numComputationalLatticePointsRapidity;
 
-	int jBC,s,sBC;
-	#pragma omp parallel for
-	for(int i = 2; i < ncx; ++i) {
-		for(int k = 2; k < ncz; ++k) {
-			jBC = 2;
-			//#pragma omp parallel for
-			for (int j = 0; j <= 1; ++j) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
-			}
-			jBC = ny + 1;
-			//#pragma omp parallel for
-			for (int j = ny + 2; j <= ny + 3; ++j) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
-			}
-		}
-	}
-}
-
-void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
-FLUID_VELOCITY * const __restrict__ u, void * latticeParams
-) {
-	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
-
-	int nz,ncx,ncy;
-	nz = lattice->numLatticePointsRapidity;
-	ncx = lattice->numComputationalLatticePointsX;
-	ncy = lattice->numComputationalLatticePointsY;
-	int ncz = lattice->numComputationalLatticePointsRapidity;
-
-	int kBC,s,sBC;
-	#pragma omp parallel for
-	for(int i = 2; i < ncx; ++i) {
+		int iBC,s,sBC;
+		#pragma omp parallel for
 		for(int j = 2; j < ncy; ++j) {
-			kBC = 2;
-			//#pragma omp parallel for
-			for (int k = 0; k <= 1; ++k) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
-			}
-			kBC = nz + 1;
-			//#pragma omp parallel for
-			for (int k = nz + 2; k <= nz + 3; ++k) {
-				s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
-				sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
-				setGhostCellVars(q,e,p,u,s,sBC);
+			for(int k = 2; k < ncz; ++k) {
+				iBC = 2;
+				//#pragma omp parallel for
+				for (int i = 0; i <= 1; ++i) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
+				iBC = nx + 1;
+				//#pragma omp parallel for
+				for (int i = nx + 2; i <= nx + 3; ++i) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(iBC, j, k, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
 			}
 		}
 	}
-}
 
-void swap(CONSERVED_VARIABLES **arr1, CONSERVED_VARIABLES **arr2) {
-	CONSERVED_VARIABLES *tmp = *arr1;
-	*arr1 = *arr2;
-	*arr2 = tmp;
-}
+	void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q,
+		PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+		FLUID_VELOCITY * const __restrict__ u, void * latticeParams
+	) {
+		struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 
-void setCurrentConservedVariables() {
-	swap(&q, &Q);
-}
+		int ny,ncx,ncy,ncz;
+		ny = lattice->numLatticePointsY;
+		ncx = lattice->numComputationalLatticePointsX;
+		ncy = lattice->numComputationalLatticePointsY;
+		ncz = lattice->numComputationalLatticePointsRapidity;
 
-void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2) {
-	FLUID_VELOCITY *tmp = *arr1;
-	*arr1 = *arr2;
-	*arr2 = tmp;
-}
+		int jBC,s,sBC;
+		#pragma omp parallel for
+		for(int i = 2; i < ncx; ++i) {
+			for(int k = 2; k < ncz; ++k) {
+				jBC = 2;
+				//#pragma omp parallel for
+				for (int j = 0; j <= 1; ++j) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
+				jBC = ny + 1;
+				//#pragma omp parallel for
+				for (int j = ny + 2; j <= ny + 3; ++j) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(i, jBC, k, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
+			}
+		}
+	}
 
-void freeHostMemory() {
-    
-    free(Source->sourcet);
-    free(Source->sourcex);
-    free(Source->sourcey);
-    free(Source->sourcen);
-    free(Source->sourceb);
-    
-	free(e);
-	free(p);
-	free(u->ut);
-	free(u->ux);
-	free(u->uy);
-	free(u->un);
+	void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q,
+		PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+		FLUID_VELOCITY * const __restrict__ u, void * latticeParams
+	) {
+		struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 
-	free(q->ttt);
-	free(q->ttx);
-	free(q->tty);
-	free(q->ttn);
-	// free \pi^\mu\nu
-#ifdef PIMUNU
-	free(q->pitt);
-	free(q->pitx);
-	free(q->pity);
-	free(q->pitn);
-	free(q->pixx);
-	free(q->pixy);
-	free(q->pixn);
-	free(q->piyy);
-	free(q->piyn);
-	free(q->pinn);
-#endif
-	// free \Pi
-#ifdef PI
-	free(q->Pi);
-#endif
-	free(q);
-}
+		int nz,ncx,ncy;
+		nz = lattice->numLatticePointsRapidity;
+		ncx = lattice->numComputationalLatticePointsX;
+		ncy = lattice->numComputationalLatticePointsY;
+		int ncz = lattice->numComputationalLatticePointsRapidity;
+
+		int kBC,s,sBC;
+		#pragma omp parallel for
+		for(int i = 2; i < ncx; ++i) {
+			for(int j = 2; j < ncy; ++j) {
+				kBC = 2;
+				//#pragma omp parallel for
+				for (int k = 0; k <= 1; ++k) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
+				kBC = nz + 1;
+				//#pragma omp parallel for
+				for (int k = nz + 2; k <= nz + 3; ++k) {
+					s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
+					sBC = columnMajorLinearIndex(i, j, kBC, ncx, ncy, ncz);
+					setGhostCellVars(q,e,p,u,s,sBC);
+				}
+			}
+		}
+	}
+
+	void swap(CONSERVED_VARIABLES **arr1, CONSERVED_VARIABLES **arr2) {
+		CONSERVED_VARIABLES *tmp = *arr1;
+		*arr1 = *arr2;
+		*arr2 = tmp;
+	}
+
+	void setCurrentConservedVariables() {
+		swap(&q, &Q);
+	}
+
+	void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2) {
+		FLUID_VELOCITY *tmp = *arr1;
+		*arr1 = *arr2;
+		*arr2 = tmp;
+	}
+
+	void freeHostMemory() {
+
+		free(Source->sourcet);
+		free(Source->sourcex);
+		free(Source->sourcey);
+		free(Source->sourcen);
+		free(Source->sourceb);
+
+		free(e);
+		free(p);
+		free(u->ut);
+		free(u->ux);
+		free(u->uy);
+		free(u->un);
+
+		free(q->ttt);
+		free(q->ttx);
+		free(q->tty);
+		free(q->ttn);
+		// free \pi^\mu\nu
+		#ifdef PIMUNU
+		free(q->pitt);
+		free(q->pitx);
+		free(q->pity);
+		free(q->pitn);
+		free(q->pixx);
+		free(q->pixy);
+		free(q->pixn);
+		free(q->piyy);
+		free(q->piyn);
+		free(q->pinn);
+		#endif
+		// free \Pi
+		#ifdef PI
+		free(q->Pi);
+		#endif
+		free(q);
+	}

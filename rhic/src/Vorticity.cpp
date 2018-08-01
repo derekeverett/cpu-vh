@@ -151,15 +151,13 @@ void * latticeParams, void * hydroParams)
         PRECISION ddn_betan = (betan_np - betan_nm) / (2.0 * dz);
 
         //set the thermal vorticity tensor
-        PRECISION wtx = (-1.0/2.0) *  ( ddt_betax - ddx_betat );
-        PRECISION wty = (-1.0/2.0) *  ( ddt_betay - ddy_betat );
-        PRECISION wtn = (-1.0/2.0) *  ( ddt_betan - ddn_betat );
-        PRECISION wxy = (-1.0/2.0) *  ( ddx_betay - ddy_betax );
-        PRECISION wxn = (-1.0/2.0) *  ( ddx_betan - ddn_betax );
-        PRECISION wyn = (-1.0/2.0) *  ( ddy_betan - ddn_betay );
+        wmunu->wtx[s] = (-1.0/2.0) *  ( ddt_betax - ddx_betat );
+        wmunu->wty[s] = (-1.0/2.0) *  ( ddt_betay - ddy_betat );
+        wmunu->wtn[s] = (-1.0/2.0) *  ( ddt_betan - ddn_betat );
+        wmunu->wxy[s] = (-1.0/2.0) *  ( ddx_betay - ddy_betax );
+        wmunu->wxn[s] = (-1.0/2.0) *  ( ddx_betan - ddn_betax );
+        wmunu->wyn[s] = (-1.0/2.0) *  ( ddy_betan - ddn_betay );
 
-        //save values of vorticity tensor here to later write to FO surface
-        
       } // for(int i = 2; i < ncx-2; ++i)
     } // for(int j = 2; j < ncy-2; ++j)
   } //for(int k = 2; k < ncz-2; ++k)

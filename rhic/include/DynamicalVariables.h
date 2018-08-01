@@ -13,6 +13,8 @@
 #define PIMUNU
 #define PI
 
+#define THERMAL_VORTICITY
+
 /*********************************************************/
 #ifndef PI
 #define NUMBER_PI_COMPONENTS 0
@@ -83,10 +85,22 @@ typedef struct
     PRECISION *sourceb;
 } DYNAMICAL_SOURCE;
 
+//antisymmetric thermal vorticity tensor
+typedef struct
+{
+	PRECISION *wtx;
+	PRECISION *wty;
+	PRECISION *wtn;
+	PRECISION *wxy;
+	PRECISION *wxn;
+	PRECISION *wyn;
+} VORTICITY;
+
 extern CONSERVED_VARIABLES *q,*Q,*qS;
 extern FLUID_VELOCITY *u,*up,*uS,*uSS;
 extern PRECISION *e, *p;
 extern DYNAMICAL_SOURCE *Source;
+extern VORTICITY *wmunu;
 
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz);
 

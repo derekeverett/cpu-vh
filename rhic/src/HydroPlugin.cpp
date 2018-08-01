@@ -136,7 +136,11 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 
   //make an array to store all the hydrodynamic variables for FOFREQ time steps
   //to be written to file once the freezeout surface is determined by the critical energy density
+  #ifdef THERMAL_VORTICITY
+  int n_hydro_vars = 22; //u0, u1, u2, u3, e, pi00, pi01, pi02, pi03, pi11, pi12, pi13, pi22, pi23, pi33, Pi, wtx, wty, wtn, wxy, wxn, wyn (the temperature and pressure are calclated with EoS)
+  #else
   int n_hydro_vars = 16; //u0, u1, u2, u3, e, pi00, pi01, pi02, pi03, pi11, pi12, pi13, pi22, pi23, pi33, Pi, the temperature and pressure are calclated with EoS
+  #endif
   double *****hydrodynamic_evoution;
   hydrodynamic_evoution = calloc5dArray(hydrodynamic_evoution, n_hydro_vars, FOFREQ+1, nx, ny, nz);
 
@@ -186,11 +190,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
       printf("n = %d:%d (t = %.3f),\t (e, p) = (%.3f, %.3f) [fm^-4],\t (T = %.3f [GeV]),\t",
       n - 1, nt, t, e[sctr], p[sctr], effectiveTemperature(e[sctr])*hbarc);
       outputDynamicalQuantities(t, outputDir, latticeParams);
-      // end hydrodynamic simulation if the temperature is below the freezeout temperature
-      //if(e[sctr] < freezeoutEnergyDensity) {
-      //printf("\nReached freezeout temperature at the center.\n");
-      //break;
-      //}
     }
 
     //************************************************************************************\
@@ -202,14 +201,18 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     //append the energy density and all hydro variables to storage arrays
     int nFO = n % FOFREQ;
 
-    if(nFO == 0) //swap in the old values so that freezeout volume elements have overlap between calls to finder
-    {
-      swapAndSetHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ);
-    }
-    else //update the values of the rest of the array with current time step
-    {
-      setHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ, n);
-    }
+    //for vorticity and polzn studies
+    #ifdef THERMAL_VORTICITY
+    //swap in the old values so that freezeout volume elements have overlap between calls to finder
+    if (nFO == 0) swapAndSetHydroVariables_Vorticity(energy_density_evoution, hydrodynamic_evoution, q, e, u, wmunu, nx, ny, nz, FOFREQ);
+    //update the values of the rest of the array with current time step
+    else setHydroVariables_Vorticity(energy_density_evoution, hydrodynamic_evoution, q, e, u, wmunu, nx, ny, nz, FOFREQ, n);
+    #else
+    //swap in the old values so that freezeout volume elements have overlap between calls to finder
+    if (nFO == 0) swapAndSetHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ);
+    //update the values of the rest of the array with current time step
+    else setHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ, n);
+    #endif
 
     //the n=1 values are written to the it = 2 index of array, so don't start until here
     int start;
@@ -296,9 +299,18 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
-                    //write the bulk pressure Pi, and start a new line
+                    //write the bulk pressure Pi
                     temp = interpolateVariable4D(hydrodynamic_evoution, 15, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-                    freezeoutSurfaceFile << temp << endl;
+                    freezeoutSurfaceFile << temp;
+                    //write 6 components of w^\mu\nu thermal vorticity tensor
+                    #ifdef THERMAL_VORTICITY
+                    for (int ivar = 16; ivar < 22; ivar++)
+                    {
+                      temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
+                      freezeoutSurfaceFile << temp << " ";
+                    }
+                    #endif
+                    freezeoutSurfaceFile << endl;
                   }
 
                   else //for 2+1D
@@ -322,95 +334,25 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                       temp = interpolateVariable3D(hydrodynamic_evoution, ivar, it, ix, iy, tau_frac, x_frac, y_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
-                    //write the bulk pressure Pi, and start a new line
+                    //write the bulk pressure Pi
                     temp = interpolateVariable3D(hydrodynamic_evoution, 15, it, ix, iy, tau_frac, x_frac, y_frac);
-                    freezeoutSurfaceFile << temp << endl;
-                  }
-                }
-
-                /*
-                else //write in binary
-                {
-                  if (FOTEST) {freezeoutSurfaceFile.write(cell_tau, sizeof(double));}
-                  else {freezeoutSurfaceFile.write(cor.get_centroid_elem(i,0) + cell_tau, sizeof(double));}
-                  freezeoutSurfaceFile.write(cor.get_centroid_elem(i,1) + cell_x,sizeof(double));
-                  freezeoutSurfaceFile.write(cor.get_centroid_elem(i,2) + cell_y,sizeof(double));
-                  if (dim == 4) freezeoutSurfaceFile.write(cor.get_centroid_elem(i,3) + cell_z,sizeof(double));
-                  else freezeoutSurfaceFile.write(cell_z,sizeof(double));
-                  //then the surface normal element; note jacobian factors of +/- tau for milne coordinates
-                  freezeoutSurfaceFile.write(t * cor.get_normal_elem(i,0),sizeof(double));
-                  freezeoutSurfaceFile.write((-1.0) * t * cor.get_normal_elem(i,1),sizeof(double));
-                  freezeoutSurfaceFile.write((-1.0) * t * cor.get_normal_elem(i,2),sizeof(double));
-                  if (dim == 4) freezeoutSurfaceFile.write((-1.0) * t * cor.get_normal_elem(i,3),sizeof(double));
-                  else freezeoutSurfaceFile.write(0.0,sizeof(double));
-                  //write all the necessary hydro dynamic variables by first performing linear interpolation from values at
-                  //corners of hypercube
-
-                  if (dim == 4) // for 3+1D
-                  {
-                    //first write the flow velocity
-                    for (int ivar = 0; ivar < dim; ivar++)
+                    freezeoutSurfaceFile << temp;
+                    #ifdef THERMAL_VORTICITY
+                    for (int ivar = 16; ivar < 22; ivar++)
                     {
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-                      freezeoutSurfaceFile.write(temp, sizeof(double));
+                      freezeoutSurfaceFile << temp << " ";
                     }
-                    //write the energy density
-                    temp = interpolateVariable4D(hydrodynamic_evoution, 4, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-                    freezeoutSurfaceFile.write(temp, sizeof(double));
-                    //the temperature !this needs to be checked
-                    freezeoutSurfaceFile.write(effectiveTemperature(temp), sizeof(double));
-                    //the baryon chemical potential, writing zero for now
-                    freezeoutSurfaceFile.write(0.0, sizeof(double));
-                    //  (e + P) / T , the entropy density for zero chem. potentials !check this, note we could be a divide by zero problem if T=0!
-                    double e_plus_P_over_T = (temp + equilibriumPressure(temp)) / effectiveTemperature(temp);
-                    freezeoutSurfaceFile.write(e_plus_P_over_T, sizeof(double));
-                    //write ten components of pi_(mu,nu) shear viscous tensor
-                    for (int ivar = 5; ivar < 15; ivar++)
-                    {
-                      temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-                      freezeoutSurfaceFile.write(temp, sizeof(double));
-                    }
-                    //write the bulk pressure Pi, and start a new line
-                    temp = interpolateVariable4D(hydrodynamic_evoution, 15, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-                    freezeoutSurfaceFile.write(temp, sizeof(double));
+                    #endif
+                    freezeoutSurfaceFile << endl;
                   }
-
-                  else //for 2+1D
-                  {
-                    //first write the flow velocity
-                    for (int ivar = 0; ivar < 4; ivar++)
-                    {
-                      temp = interpolateVariable3D(hydrodynamic_evoution, ivar, it, ix, iy, tau_frac, x_frac, y_frac);
-                      freezeoutSurfaceFile.write(temp, sizeof(double));
-                    }
-                    //write the energy density
-                    temp = interpolateVariable3D(hydrodynamic_evoution, 4, it, ix, iy, tau_frac, x_frac, y_frac);
-                    freezeoutSurfaceFile.write(temp, sizeof(double)); //note factors of hbarc to give units (GeV/fm^3)
-                    //the temperature !this needs to be checked
-                    freezeoutSurfaceFile.write(effectiveTemperature(temp), sizeof(double));
-                    //the baryon chemical potential, writing zero for now
-                    freezeoutSurfaceFile.write(0.0, sizeof(double));
-                    //  (e + P) / T , the entropy density for zero chem. potentials !check this, note we could be a divide by zero problem if T=0!
-                    double e_plus_P_over_T = (temp + equilibriumPressure(temp)) / effectiveTemperature(temp);
-                    freezeoutSurfaceFile.write(e_plus_P_over_T, sizeof(double));
-                    //write ten components of pi_(mu,nu) shear viscous tensor
-                    for (int ivar = 5; ivar < 15; ivar++)
-                    {
-                      temp = interpolateVariable3D(hydrodynamic_evoution, ivar, it, ix, iy, tau_frac, x_frac, y_frac);
-                      freezeoutSurfaceFile.write(temp, sizeof(double));
-                    }
-                    //write the bulk pressure Pi, and start a new line
-                    temp = interpolateVariable3D(hydrodynamic_evoution, 15, it, ix, iy, tau_frac, x_frac, y_frac);
-                    freezeoutSurfaceFile.write(temp, sizeof(double));
-                  }
-                }
-                */
-              }
-            }
-          }
-        }
-      }
-    }
+                } // if (FOFORMAT == 0)
+              } //for (int i = 0; i < cor.get_Nelements(); i++)
+            } // for (int iz = 0; iz < dimZ; iz++)
+          } // for (int iy = 0; iy < ny-1; iy++)
+        } // for (int ix = 0; ix < nx-1; ix++)
+      } //for (int it = start; it < FOFREQ; it++)
+    } // if (nFO == FOFREQ - 1)
 
     //if all cells are below freezeout temperature end hydro
     accumulator1 = 0;
@@ -435,8 +377,8 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     t1 = std::clock();
 
     // Read in source terms from particles
-    if(initialConditionType==12){
-        if(n<=numberOfSourceFiles) readInSource(n, latticeParams, initCondParams, hydroParams, rootDirectory);
+    if (initialConditionType == 12) {
+        if (n <= numberOfSourceFiles) readInSource(n, latticeParams, initCondParams, hydroParams, rootDirectory);
         else noSource(latticeParams, initCondParams);
     }
 
@@ -450,8 +392,10 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     setCurrentConservedVariables();
 
     //calculate the thermal vorticity tensor for use in polarization studies
+    #ifdef THERMAL_VORTICITY
     calculateThermalVorticity(t, dt, q, Q, latticeParams, hydroParams);
-
+    #endif
+    
     t = t0 + n * dt;
   }
   printf("Average time/step: %.3f ms\n",totalTime/((double)nsteps));
