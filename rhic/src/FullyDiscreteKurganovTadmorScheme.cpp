@@ -19,12 +19,14 @@
 #include "../include/SourceTerms.h"
 #include "../include/EnergyMomentumTensor.h"
 #include "../include/HydroParameters.h"
-
+#include "../include/EquationOfState.h"
 #include "../include/FiniteDifference.h" //temp
 
 #include <omp.h>
 
-//#define REGULATE_BULK //define to regulate bulk pressure according to inv reynolds #, otherwise bulk is not regulated
+//choose a regulation scheme
+#define REG_SCHEME_1
+//#define REG_SCHEME_2
 
 /**************************************************************************************************************************************************\
 void setNeighborCells(const PRECISION * const __restrict__ data,
@@ -687,10 +689,10 @@ int ncx, int ncy, int ncz
 #ifndef IDEAL
 void
 regulateDissipativeCurrents(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currentVars,
-const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
-const FLUID_VELOCITY * const __restrict__ u,
-int ncx, int ncy, int ncz
+	const CONSERVED_VARIABLES * const __restrict__ currentVars,
+	const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
+	const FLUID_VELOCITY * const __restrict__ u,
+	int ncx, int ncy, int ncz
 ) {
 	#pragma omp parallel for collapse(3)
 	#ifdef TILE
@@ -701,7 +703,7 @@ int ncx, int ncy, int ncz
 			for(int i = 2; i < ncx-2; ++i) {
 				int s = columnMajorLinearIndex(i, j, k, ncx, ncy, ncz);
 
-#ifdef PIMUNU
+				#ifdef PIMUNU
 				PRECISION pitt = currentVars->pitt[s];
 				PRECISION pitx = currentVars->pitx[s];
 				PRECISION pity = currentVars->pity[s];
@@ -712,7 +714,7 @@ int ncx, int ncy, int ncz
 				PRECISION piyy = currentVars->piyy[s];
 				PRECISION piyn = currentVars->piyn[s];
 				PRECISION pinn = currentVars->pinn[s];
-#else
+				#else
 				PRECISION pitt = 0.0;
 				PRECISION pitx = 0.0;
 				PRECISION pity = 0.0;
@@ -723,29 +725,32 @@ int ncx, int ncy, int ncz
 				PRECISION piyy = 0.0;
 				PRECISION piyn = 0.0;
 				PRECISION pinn = 0.0;
-#endif
-#ifdef PI
+				#endif
+				#ifdef PI
 				PRECISION Pi = currentVars->Pi[s];
-#else
+				#else
 				PRECISION Pi = 0;
-#endif
+				#endif
 
 				PRECISION ut = u->ut[s];
 				PRECISION ux = u->ux[s];
 				PRECISION uy = u->uy[s];
 				PRECISION un = u->un[s];
+				PRECISION t2 = t*t;
+
+				PRECISION facShear = 1.0;
+				PRECISION facBulk = 1.0;
+
+				// 'old'  scheme
+				#ifdef REG_SCHEME_1
 
 				PRECISION xi0 = (PRECISION)(1.0);
 				PRECISION rhomax = (PRECISION)(10.0);
 				//PRECISION xi0 = (PRECISION)(0.1);
 				//PRECISION rhomax = (PRECISION)(0.8);
-				PRECISION t2 = t*t;
-		//		PRECISION pipi = pitt*pitt-2*(pitx*pitx+pity*pity-pixy*pixy+t2*(pitn*pitn-pixn*pixn-piyn*piyn))+pixx*pixx+piyy*piyy+pinn*pinn*t2*t2;
 				PRECISION pipi = pitt*pitt-2*pitx*pitx-2*pity*pity+pixx*pixx+2*pixy*pixy+piyy*piyy-2*pitn*pitn*t2+2*pixn*pixn*t2+2*piyn*piyn*t2+pinn*pinn*t2*t2;
-				if(isnan(pipi)==1) printf("found pipi Nan\n");
-				//PRECISION spipi = sqrt(fabs(pipi+3*Pi*Pi)); //change this to sqrt(fabs(pipi)) to remove bulk pressure regulation of shear stress
-				PRECISION spipi = sqrt(fabs(pipi)); //change this to sqrt(fabs(pipi)) to remove bulk pressure regulation of shear stress
-				if(isnan(spipi)==1) printf("found spipi Nan\n");
+				PRECISION spipi = sqrt(fabs(pipi));
+
 				PRECISION pimumu = pitt - pixx - piyy - pinn*t*t;
 				PRECISION piu0 = -(pitn*t2*un) + pitt*ut - pitx*ux - pity*uy;
 				PRECISION piu1 = -(pixn*t2*un) + pitx*ut - pixx*ux - pixy*uy;
@@ -753,7 +758,6 @@ int ncx, int ncy, int ncz
 				PRECISION piu3 = -(pinn*t2*un) + pitn*ut - pixn*ux - piyn*uy;
 
 				PRECISION a1 = spipi/rhomax/sqrtf(e[s]*e[s]+3*p[s]*p[s]);
-				if(isnan(a1)==1) printf("found a1 Nan\n");
 				PRECISION a2 = pimumu/xi0/rhomax/spipi;
 				PRECISION a3 = piu0/xi0/rhomax/spipi;
 				PRECISION a4 = piu1/xi0/rhomax/spipi;
@@ -764,41 +768,79 @@ int ncx, int ncy, int ncz
 				PRECISION a56 = fmax(a5,a6);
 				PRECISION a3456 = fmax(a34,a56);
 				PRECISION rho = fmax(a12,a3456);
-
-				if(isnan(rho)==1) printf("found rho Nan\n");
-				PRECISION fac = tanh(rho)/rho;
-				if(fabs(rho)<1.e-7) fac = 1;
-				if(isnan(fac)==1) printf("found fac Nan\n");
-
-				//regulate the shear stress
-				#ifdef PIMUNU
-				currentVars->pitt[s] *= fac;
-				currentVars->pitx[s] *= fac;
-				currentVars->pity[s] *= fac;
-				currentVars->pitn[s] *= fac;
-				currentVars->pixx[s] *= fac;
-				currentVars->pixy[s] *= fac;
-				currentVars->pixn[s] *= fac;
-				currentVars->piyy[s] *= fac;
-				currentVars->piyn[s] *= fac;
-				currentVars->pinn[s] *= fac;
-				#endif
+				facShear = tanh(rho)/rho;
+				if(fabs(rho)<1.e-7) facShear = 1.0;
 
 				//regulate the bulk pressure according to it's inverse reynolds #
-				#ifdef REGULATE_BULK
-				PRECISION rhoBulk = abs(Pi) / sqrtf(e[s]*e[s]+3*p[s]*p[s]);
-				if(isnan(rhoBulk) == 1) printf("found rhoBulk Nan\n");
-                                PRECISION facBulk = tanh(rhoBulk) / rhoBulk;
-                                if(fabs(rhoBulk) < 1.e-7) facBulk = 1.0;
-                                if(isnan(facBulk) == 1) printf("found facBulk Nan\n");
+				PRECISION rhoBulk = fabs(Pi) / p[s];
+				facBulk = tanh(rhoBulk) / rhoBulk;
+				if (fabs(rhoBulk) < 1.e-7) facBulk = 1.0;
 
-				//regulate bulk pressure
+				#else
+
+				//new scheme from appendix C in arXiv:1804.10557v1
+
+				//get strength of regulation based on energy density compared to critical value e0
+				PRECISION xi0 = 10.0;
+				PRECISION e0 = 0.51;
+				PRECISION e_width = 0.051;
+				PRECISION c1 = 1.0 / ( 1.0 + exp( -(e[s] - e0) / e_width ) );
+				PRECISION c2 = 1.0 / ( 1.0 + exp( e0 / e_width ) );
+				PRECISION a = xi0 * ( c1 - c2 );
+
+				//enforce tracelessness and orthogonality by hand
+				PRECISION pinn_num = pixx * (ux*ux - ut*ut) + piyy * (uy*uy - ut*ut) + 2.0 * ( pixy*ux*uy + t2*un*(pixn*ux + piyn*uy ) );
+				PRECISION pinn_den = t2 * (1.0 + ux*ux + uy*uy);
+
+				#ifdef PIMUNU
+				currentVars->pinn[s] = pinn_num / pinn_den;
+				currentVars->pitn[s] = (pixn*ux + piyn*uy + t2*pinn*un) / ut;
+				currentVars->pity[s] = (pixy*ux + piyy*uy + t2*piyn*un) / ut;
+				currentVars->pitx[s] = (pixx*ux + pixy*uy + t2*pixn*un) / ut;
+				currentVars->pitt[s] = (pitx*ux + pity*uy + t2*pitn*un) / ut;
+
+				//update these values
+				pitt = currentVars->pitt[s];
+				pitx = currentVars->pitx[s];
+				pity = currentVars->pity[s];
+				pitn = currentVars->pitn[s];
+				pinn = currentVars->pinn[s];
+				#endif
+
+				PRECISION pipi = pitt*pitt-2*pitx*pitx-2*pity*pity+pixx*pixx+2*pixy*pixy+piyy*piyy-2*pitn*pitn*t2+2*pixn*pixn*t2+2*piyn*piyn*t2+pinn*pinn*t2*t2;
+				PRECISION spipi = sqrt(fabs(pipi));
+				PRECISION invReynoldsShear = spipi/sqrtf( e[s]*e[s]+3*p[s]*p[s]);
+				facShear = invReynoldsShear / a;
+
+				PRECISION invReynoldsBulk = fabs(Pi) / p[s];
+				facBulk = invReynoldsBulk / a;
+
+				#endif
+
+				//ensure that regulation only happens outside the FO surface!
+				PRECISION hbarc = 0.197326938;
+				PRECISION T_critical = 0.155; //GeV
+				T_critical /= hbarc; //critical temperature for regulation in fm^-4
+				PRECISION e_critical = equilibriumEnergyDensity(T_critical);
+				if (e[s] > e_critical) {facShear = 1.0; facBulk = 1.0;}
+
+				#ifdef PIMUNU
+				currentVars->pitt[s] *= facShear;
+				currentVars->pitx[s] *= facShear;
+				currentVars->pity[s] *= facShear;
+				currentVars->pitn[s] *= facShear;
+				currentVars->pixx[s] *= facShear;
+				currentVars->pixy[s] *= facShear;
+				currentVars->pixn[s] *= facShear;
+				currentVars->piyy[s] *= facShear;
+				currentVars->piyn[s] *= facShear;
+				currentVars->pinn[s] *= facShear;
+				regFacShear[s] = facShear;
+				#endif
 				#ifdef PI
 				currentVars->Pi[s] *= facBulk;
+				regFacBulk[s] = facBulk;
 				#endif
-
-				#endif
-
 			}
 		}
 	}
@@ -841,9 +883,9 @@ void * latticeParams, void * hydroParams
 
 	setInferredVariablesKernel(qS, e, p, uS, t, latticeParams);
 
-#ifdef REGULATE_DISSIPATIVE_CURRENTS
+	#ifdef REGULATE_DISSIPATIVE_CURRENTS
 	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz);
-#endif
+	#endif
 
 	setGhostCells(qS, e, p, uS, latticeParams);
 
@@ -858,11 +900,12 @@ void * latticeParams, void * hydroParams
 	convexCombinationEulerStepKernel(q, Q, ncx, ncy, ncz);
 
 	swapFluidVelocity(&up, &u);
+
 	setInferredVariablesKernel(Q, e, p, u, t, latticeParams);
 
-#ifdef REGULATE_DISSIPATIVE_CURRENTS
+	#ifdef REGULATE_DISSIPATIVE_CURRENTS
 	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz);
-#endif
+	#endif
 
 	setGhostCells(Q, e, p, u, latticeParams);
 }

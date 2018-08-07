@@ -11,7 +11,7 @@
 #define NUMBER_CONSERVATION_LAWS 4
 
 #define PIMUNU
-#define PI
+//#define PI
 
 #define THERMAL_VORTICITY
 
@@ -101,6 +101,7 @@ extern FLUID_VELOCITY *u,*up,*uS,*uSS;
 extern PRECISION *e, *p;
 extern DYNAMICAL_SOURCE *Source;
 extern VORTICITY *wmunu;
+extern PRECISION *regFacShear, *regFacBulk;
 
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz);
 

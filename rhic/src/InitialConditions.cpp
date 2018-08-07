@@ -493,13 +493,23 @@ void setFluidVelocityInitialCondition(void * latticeParams, void * hydroParams) 
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-				PRECISION ux = 0;
-				PRECISION uy = 0;
-				PRECISION un = 0;
+				PRECISION ux = 0.;
+				PRECISION uy = 0.;
+				PRECISION un = 0.;
 				u->ux[s] = 0;
 				u->uy[s] = 0;
 				u->un[s] = 0;
-				u->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
+				u->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
+
+        up->ux[s] = 0;
+				up->uy[s] = 0;
+				up->un[s] = 0;
+				up->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
+        
+        uS->ux[s] = 0;
+				uS->uy[s] = 0;
+				uS->un[s] = 0;
+				uS->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
 			}
 		}
 	}
@@ -625,60 +635,60 @@ void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void
 //* Initial conditions for hydro with dynamical sources
 //*********************************************************************************************************/
 void setICfromSource(void * latticeParams, void * initCondParams, void * hydroParams, const char * rootDirectory){
-    
+
     struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
     struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
     struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
-    
+
     double initialEnergyDensity = initCond->initialEnergyDensity;
-    
+
     int ncx = lattice->numComputationalLatticePointsX;
     int ncy = lattice->numComputationalLatticePointsY;
     int ncz = lattice->numComputationalLatticePointsRapidity;
-    
+
     int nx = lattice->numLatticePointsX;
     int ny = lattice->numLatticePointsY;
     int nz = lattice->numLatticePointsRapidity;
-    
+
     double dx = lattice->latticeSpacingX;
     double dy = lattice->latticeSpacingY;
     double dz = lattice->latticeSpacingRapidity;
     double t0 = hydro->initialProperTimePoint;
-    
+
     //==================================================
     // Initialize to vacuum
     //==================================================
-    
+
     printf("initialized to be vaccum \n");
-    
+
     double ed = initialEnergyDensity;
     double pd = equilibriumPressure(ed);
-    
+
     //--------------------------------------------------
     // Initialize energy, baryon and pressure density, also
     // shear, bulk, flow velocity and baryon diffusion current
     //--------------------------------------------------
-    
+
     printf("Initialize \\pi^\\mu\\nu to zero.\n");
     printf("Initialize \\nb^\\mu to zero.\n");
-    
+
     for(int i = 2; i < nx+2; ++i) {
         for(int j = 2; j < ny+2; ++j) {
             for(int k = 2; k < nz+2; ++k) {
                 int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                
+
                 e[s] = (PRECISION) ed;
                 p[s] = pd;
-                
+
                 PRECISION ux = 0;
                 PRECISION uy = 0;
                 PRECISION un = 0;
-                
+
                 u->ux[s] = 0;
                 u->uy[s] = 0;
                 u->un[s] = 0;
                 u->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
-                
+
                 up->ux[s] = 0;
                 up->uy[s] = 0;
                 up->un[s] = 0;

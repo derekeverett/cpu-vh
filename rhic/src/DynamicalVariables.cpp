@@ -25,6 +25,8 @@ DYNAMICAL_SOURCE *Source;
 
 VORTICITY *wmunu;
 
+PRECISION *regFacShear, *regFacBulk;
+
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz) {
 	#ifdef ROW_MAJ
 	return (ny * nz) * i + (nz) * j + k;
@@ -120,10 +122,14 @@ void allocateHostMemory(int len) {
 	Q->piyy = (PRECISION *)calloc(len, bytes);
 	Q->piyn = (PRECISION *)calloc(len, bytes);
 	Q->pinn = (PRECISION *)calloc(len, bytes);
+	//check of regulation factor
+	regFacShear = (PRECISION *)calloc(len, bytes);
 	#endif
 	// allocate space for \Pi
 	#ifdef PI
 	Q->Pi = (PRECISION *)calloc(len, bytes);
+	//check of regulation factor
+	regFacBulk = (PRECISION *)calloc(len, bytes);
 	#endif
 	// updated variables at the intermediate time step
 	qS = (CONSERVED_VARIABLES *)calloc(1, sizeof(CONSERVED_VARIABLES));

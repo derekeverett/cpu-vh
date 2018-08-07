@@ -53,9 +53,11 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   //output(q->piyy, t, outputDir, "piyy", latticeParams);
   //output(q->piyn, t, outputDir, "piyn", latticeParams);
   //output(q->pinn, t, outputDir, "pinn", latticeParams);
+  output(regFacShear, t, outputDir, "regFacShear", latticeParams);
   #endif
   #ifdef PI
   //output(q->Pi, t, outputDir, "Pi", latticeParams);
+  output(regFacBulk, t, outputDir, "regFacBulk", latticeParams);
   #endif
   #ifdef THERMAL_VORTICITY
   output(wmunu->wtx, t, outputDir, "wtx", latticeParams);
