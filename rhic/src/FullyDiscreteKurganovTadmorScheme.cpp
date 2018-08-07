@@ -694,6 +694,13 @@ regulateDissipativeCurrents(PRECISION t,
 	const FLUID_VELOCITY * const __restrict__ u,
 	int ncx, int ncy, int ncz
 ) {
+
+	//only cells with Temperature < T_reg have dissipative currents regulated
+	PRECISION hbarc = 0.197326938;
+	PRECISION T_reg = 0.1; //GeV
+	T_reg /= hbarc; //critical temperature for regulation in fm^-1
+	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
+
 	#pragma omp parallel for collapse(3)
 	#ifdef TILE
 	#pragma unroll_and_jam
@@ -817,12 +824,8 @@ regulateDissipativeCurrents(PRECISION t,
 
 				#endif
 
-				//ensure that regulation only happens outside the FO surface!
-				PRECISION hbarc = 0.197326938;
-				PRECISION T_critical = 0.155; //GeV
-				T_critical /= hbarc; //critical temperature for regulation in fm^-4
-				PRECISION e_critical = equilibriumEnergyDensity(T_critical);
-				if (e[s] > e_critical) {facShear = 1.0; facBulk = 1.0;}
+				//ensure that regulation only happens far outside the FO surface!
+				if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
 
 				#ifdef PIMUNU
 				currentVars->pitt[s] *= facShear;
@@ -882,11 +885,9 @@ void * latticeParams, void * hydroParams
 	t+=dt;
 
 	setInferredVariablesKernel(qS, e, p, uS, t, latticeParams);
-
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
 	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz);
 	#endif
-
 	setGhostCells(qS, e, p, uS, latticeParams);
 
 	//===================================================
@@ -896,16 +897,11 @@ void * latticeParams, void * hydroParams
 	eulerStepKernelX(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dx);
 	eulerStepKernelY(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dy);
 	eulerStepKernelZ(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dz);
-
 	convexCombinationEulerStepKernel(q, Q, ncx, ncy, ncz);
-
 	swapFluidVelocity(&up, &u);
-
 	setInferredVariablesKernel(Q, e, p, u, t, latticeParams);
-
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
 	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz);
 	#endif
-
 	setGhostCells(Q, e, p, u, latticeParams);
 }

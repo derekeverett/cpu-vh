@@ -13,35 +13,100 @@
 #include "../include/FullyDiscreteKurganovTadmorScheme.h" // for const params
 #include "../include/EquationOfState.h"
 
-#define MAX_ITERS 10000000
-//const PRECISION ACC = 1e-2;
+#define MAX_ITERS 10000 //Maximum number of root iterations
+const PRECISION ACC = 1.0e-3; //Maximum relative error in energy density
 
 PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRECISION M, PRECISION Pi) {
-#ifndef CONFORMAL_EOS
+
+	#ifndef CONFORMAL_EOS
 	PRECISION e0 = ePrev;	// initial guess for energy density
-	for(int j = 0; j < MAX_ITERS; ++j) {
+
+	//NEWTON-RAPHSON METHOD
+	for (int j = 0; j < MAX_ITERS; ++j) {
 		PRECISION p = equilibriumPressure(e0);
 		PRECISION cs2 = speedOfSoundSquared(e0);
 		PRECISION cst2 = p/e0;
 
-		PRECISION A = M0*(1-cst2)+Pi;
-		PRECISION B = M0*(M0+Pi)-M;
-		PRECISION H = sqrtf(fabsf(A*A+4*cst2*B));
-		PRECISION D = (A-H)/(2*cst2);
+		PRECISION A = M0 * (1.0 - cst2) + Pi;
+		PRECISION B = M0 * (M0 + Pi) - M;
+		PRECISION H = sqrtf( fabsf(A*A + 4*cst2*B) );
+		PRECISION D = (A-H) / (2*cst2);
 
 		PRECISION f = e0 + D;
-		PRECISION fp = 1 - ((cs2 - cst2)*(B + D*H - ((cs2 - cst2)*cst2*D*M0)/e0))/(cst2*e0*H);
+		PRECISION fp = 1.0 - ( (cs2 - cst2) * (B + D*H - ( (cs2 - cst2)*cst2*D*M0)/e0) ) / (cst2*e0*H);
 
 		PRECISION e = e0 - f/fp;
-		if(fabsf(e - e0) <=  0.001 * fabsf(e)) return e;
+		if (fabsf(e - e0) <=  ACC * fabsf(e)) return e;
 		e0 = e;
 	}
-//	printf("Maximum number of iterations exceeded.\n");
+
+	//BISECTION METHOD if NEWTON RAPHSON fails
+	printf("NR failed to find root. Calling Bisection routine \n");
+	PRECISION e_lo = 0.0;
+	PRECISION e_mid = ePrev;
+	PRECISION e_hi = 10.0 * (ePrev + 2.0);
+
+	for (int j = 0; j < MAX_ITERS; ++j) {
+		PRECISION p_lo = equilibriumPressure(e_lo);
+		PRECISION p_mid = equilibriumPressure(e_mid);
+		PRECISION p_hi = equilibriumPressure(e_hi);
+
+		PRECISION cs2_lo = speedOfSoundSquared(e_lo);
+		PRECISION cs2_mid = speedOfSoundSquared(e_mid);
+		PRECISION cs2_hi = speedOfSoundSquared(e_hi);
+
+		PRECISION cst2_lo = p_lo/e_lo;
+		PRECISION cst2_mid = p_mid/e_mid;
+		PRECISION cst2_hi = p_hi/e_hi;
+
+		PRECISION A_lo = M0 * (1.0 - cst2_lo) + Pi;
+		PRECISION A_mid = M0 * (1.0 - cst2_mid) + Pi;
+		PRECISION A_hi = M0 * (1.0 - cst2_hi) + Pi;
+
+		PRECISION B = M0 * (M0 + Pi) - M;
+
+		PRECISION H_lo = sqrtf( fabsf(A_lo*A_lo + 4*cst2_lo*B) );
+		PRECISION H_mid = sqrtf( fabsf(A_mid*A_mid + 4*cst2_mid*B) );
+		PRECISION H_hi = sqrtf( fabsf(A_hi*A_hi + 4*cst2_hi*B) );
+
+		PRECISION D_lo = (A_lo-H_lo) / (2*cst2_lo);
+		PRECISION D_mid = (A_mid-H_mid) / (2*cst2_mid);
+		PRECISION D_hi = (A_hi-H_hi) / (2*cst2_hi);
+
+		PRECISION f_lo = e_lo + D_lo;
+		PRECISION f_mid = e_mid + D_mid;
+		PRECISION f_hi = e_hi + D_hi;
+
+		if (j == 0 && (f_lo * f_hi > 0.0)) printf("root does not lie within brackets for guess in bisection \n");
+
+		//if we converge within tolerance
+		if ( (e_hi - e_lo) < ACC * e_hi) return e_mid;
+		else
+		{
+			//if root lies between lo and mid
+			if (f_lo * f_mid < 0.0)
+			{
+				e_lo = e_lo;
+				e_hi = e_mid;
+				e_mid = (e_lo + e_hi) / 2.0;
+			}
+			//if root lies between mid and high
+			else if (f_mid * f_hi < 0.0)
+			{
+				e_lo = e_mid;
+				e_hi = e_hi;
+				e_mid = (e_lo + e_hi) / 2.0;
+			}
+		} //else
+	} //for (int j = 0; j < MAX_ITERS; ++j)
+
+
+	//if all root solving routines fail
 	printf("Maximum number of iterations exceeded.\tePrev=%.3f,\tM0=%.3f,\t M=%.3f,\t Pi=%.3f\n",ePrev,M0,M,Pi);
-	return e0;
-#else
-	return fabsf(sqrtf(fabsf(4 * M0 * M0 - 3 * M)) - M0);
-#endif
+	return ePrev;
+	#else
+	return fabsf( sqrtf( fabsf(4 * M0 * M0 - 3 * M) ) - M0 );
+	#endif
 }
 
 void getInferredVariables(PRECISION t, const PRECISION * const __restrict__ q, PRECISION ePrev,

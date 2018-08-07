@@ -73,8 +73,8 @@ int numberWoundedNucleons(int A, double b, double * const __restrict__ x, double
 	return n;
 }
 
-void 
-monteCarloGlauberEnergyDensityTransverseProfile(double * const __restrict__ energyDensityTransverse, 
+void
+monteCarloGlauberEnergyDensityTransverseProfile(double * const __restrict__ energyDensityTransverse,
 int nx, int ny, double dx, double dy, void * initCondParams
 ) {
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
@@ -84,7 +84,9 @@ int nx, int ny, double dx, double dy, void * initCondParams
 	double snn = initCond->scatteringCrossSectionNN;
 	double etaFlat = initCond->rapidityMean;
 	double etaVariance = initCond->rapidityVariance;
+	//the nucleon width parameter
 	double SIG0 = 0.46;
+	//double SIG0 = 0.66;
 
 	double xp[2*NA], yp[2*NA];
    srand(1328398221);
@@ -98,9 +100,9 @@ int nx, int ny, double dx, double dy, void * initCondParams
 	for(int i = 0; i < nx; ++i) {
    	for(int j = 0; j < ny; ++j) {
       	for (int n = 0; n < nNucleons; ++n) {
-         	double x = (i - ((double)nx-1.)/2.)*dx - xp[n]; 
-            double y = (j - ((double)ny-1.)/2.)*dy - yp[n]; 
-				// assumes gaussion bump in density
+         	double x = (i - ((double)nx-1.)/2.)*dx - xp[n];
+            double y = (j - ((double)ny-1.)/2.)*dy - yp[n];
+						// assumes gaussian bump in density (gaussian energy deposition)
             energyDensityTransverse[i + nx*j] += exp(-x*x/2/SIG0/SIG0-y*y/2/SIG0/SIG0);
          }
 		}
