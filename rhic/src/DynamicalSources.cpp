@@ -40,16 +40,16 @@ void readInSource(int n, void * latticeParams, void * initCondParams, void * hyd
 
     // For each time step, the total number of cells in 3D space
     int nElements = nx * ny * nz;
-    
+
     double t0 = hydro->initialProperTimePoint;
     double dt = lattice->latticeSpacingProperTime;
-    
+
     double t = t0 + (n-1)* dt;
     double time;
 
     FILE *sourcefile;
     char fname[255];
-    sprintf(fname, "%s/%s%d.dat", rootDirectory, "../source/Sources",n);
+    sprintf(fname, "%s/%s%d.dat", rootDirectory, "input/DynamicalSources/Sources",n);
     sourcefile = fopen(fname, "r");
 
     if(sourcefile==NULL){
@@ -59,19 +59,19 @@ void readInSource(int n, void * latticeParams, void * initCondParams, void * hyd
     else
     {
       fseek(sourcefile,0L,SEEK_SET);
-        
+
       //for(int i=0; i<(nElements+1)*(n-1); i++) fscanf(sourcefile,"%*[^\n]%*c");//Skip the title line and all the cells read in by previous steps, (nElements+1) lines
 
       //fscanf(sourcefile,"%*s%le%*c", &time);
       //printf("time=%lf\n",time);
       //if(time-t>1.e-20) printf("The dynamical source at a wrong time step is being read in. tSource=%lf, tCode=%lf\n", time, t);
       //if(time==t) printf("The dynamical source starts to be read in at %lf.\n", time);
-        
+
       for(int i = 2; i < nx+2; ++i){
          for(int j = 2; j < ny+2; ++j){
              for(int k = 2; k < nz+2; ++k){
                int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-               fscanf(sourcefile,"%le %le %le %le %le %*s%*s%*s%*s%*s%*s%*s", & Source->sourcet[s], & Source->sourcex[s], & Source->sourcey[s], & Source->sourcen[s], & Source->sourceb[s]);
+               fscanf(sourcefile,"%*s%*s%*s %le %le %le %le %le", & Source->sourcet[s], & Source->sourcex[s], & Source->sourcey[s], & Source->sourcen[s], & Source->sourceb[s]);
                //printf("%le\t %le\t %le\t %le\t %le\n", Source->sourcet[s], Source->sourcex[s], Source->sourcey[s], Source->sourcen[s], Source->sourceb[s]);
                //Source->sourcet[s]=10*Source->sourcet[s];
                //Source->sourcex[s]=10*Source->sourcex[s];
@@ -90,11 +90,11 @@ void noSource(void * latticeParams, void * initCondParams)
 {
     struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
     struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
-    
+
     int nx = lattice->numLatticePointsX;
     int ny = lattice->numLatticePointsY;
     int nz = lattice->numLatticePointsRapidity;
-    
+
     for(int i = 2; i < nx+2; ++i){
         for(int j = 2; j < ny+2; ++j){
             for(int k = 2; k < nz+2; ++k){
@@ -164,4 +164,3 @@ void setDynamicalSources(void * latticeParams, void * initCondParams, double *dp
         }//j
     }//i
 }
-

@@ -164,27 +164,30 @@ PRECISION * const __restrict__ ut, PRECISION * const __restrict__ ux, PRECISION 
 #endif
 /****************************************************************************/
 
-	PRECISION M0 = ttt - pitt;
-	PRECISION M1 = ttx - pitx;
-	PRECISION M2 = tty - pity;
-	PRECISION M3 = ttn - pitn;
-	PRECISION M = M1 * M1 + M2 * M2 + t * t * M3 * M3;
+PRECISION M0 = ttt - pitt;
+PRECISION M1 = ttx - pitx;
+PRECISION M2 = tty - pity;
+PRECISION M3 = ttn - pitn;
+PRECISION M = M1 * M1 + M2 * M2 + t * t * M3 * M3;
 #ifdef Pi
-	if ((M0 * M0 - M + M0 * Pi) < 0)
-		Pi = M / M0 - M0;
+if ((M0 * M0 - M + M0 * Pi) < 0)
+Pi = M / M0 - M0;
 #endif
 /****************************************************************************/
-	if (ePrev <= 0.1) {
-		*e = M0 - M / M0;
-	} else {
-		*e = energyDensityFromConservedVariables(ePrev, M0, M, Pi);
-		}
-	if (isnan(*e)) {
-		printf("M0=%.3f,\t M1=%.3f,\t M2=%.3f,\t M3=%.3f\n", M0, M1, M2, M3);
-		printf("ttt=%.3f,\t ttx=%.3f,\t tty=%.3f,\t ttn=%.3f\n", ttt, ttx, tty, ttn);
-		printf("pitt=%.3f,\t pitx=%.3f,\t pity=%.3f,\t pitn=%.3f\n", pitt, pitx, pity, pitn);
+if (ePrev <= 0.1)
+{
+	*e = M0 - M / M0;
+}
+else
+{
+	*e = energyDensityFromConservedVariables(ePrev, M0, M, Pi);
+}
+if (isnan(*e)) {
+	printf("M0=%.3f,\t M1=%.3f,\t M2=%.3f,\t M3=%.3f\n", M0, M1, M2, M3);
+	printf("ttt=%.3f,\t ttx=%.3f,\t tty=%.3f,\t ttn=%.3f\n", ttt, ttx, tty, ttn);
+	printf("pitt=%.3f,\t pitx=%.3f,\t pity=%.3f,\t pitn=%.3f\n", pitt, pitx, pity, pitn);
 
-	}
+}
 	*p = equilibriumPressure(*e);
 	if (*e < 1.e-7) {
 		*e = 1.e-7;

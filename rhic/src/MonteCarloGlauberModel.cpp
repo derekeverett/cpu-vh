@@ -85,8 +85,8 @@ int nx, int ny, double dx, double dy, void * initCondParams
 	double etaFlat = initCond->rapidityMean;
 	double etaVariance = initCond->rapidityVariance;
 	//the nucleon width parameter
-	double SIG0 = 0.46;
-	//double SIG0 = 0.66;
+	//double SIG0 = 0.46;
+	double SIG0 = 0.96;
 
 	double xp[2*NA], yp[2*NA];
    srand(1328398221);

@@ -17,6 +17,11 @@
 //#define NUM_TILES 100
 //#endif
 
+//choose a regulation scheme
+#define REG_SCHEME_1
+//#define REG_SCHEME_2
+//#define REG_SCHEME_3
+
 #include "DynamicalVariables.h"
 
 void rungeKutta2(PRECISION t, PRECISION dt, CONSERVED_VARIABLES * __restrict__ q, CONSERVED_VARIABLES * __restrict__ Q,

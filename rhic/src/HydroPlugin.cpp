@@ -47,12 +47,12 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   //	output(q->ttt, t, outputDir, "ttt", latticeParams);
   //	output(q->ttn, t, outputDir, "ttn", latticeParams);
   #ifdef PIMUNU
-  //output(q->pixx, t, outputDir, "pixx", latticeParams);
-  //output(q->pixy, t, outputDir, "pixy", latticeParams);
-  //output(q->pixn, t, outputDir, "pixn", latticeParams);
+  output(q->pixx, t, outputDir, "pixx", latticeParams);
+  output(q->pixy, t, outputDir, "pixy", latticeParams);
+  output(q->pixn, t, outputDir, "pixn", latticeParams);
   //output(q->piyy, t, outputDir, "piyy", latticeParams);
   //output(q->piyn, t, outputDir, "piyn", latticeParams);
-  //output(q->pinn, t, outputDir, "pinn", latticeParams);
+  output(q->pinn, t, outputDir, "pinn", latticeParams);
   output(regFacShear, t, outputDir, "regFacShear", latticeParams);
   #endif
   #ifdef PI
@@ -107,7 +107,18 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   printf("Grid size = %d x %d x %d\n", nx, ny, nz);
   printf("spatial resolution = (%.3f, %.3f, %.3f)\n", lattice->latticeSpacingX, lattice->latticeSpacingY, lattice->latticeSpacingRapidity);
   printf("freezeout temperature = %.3f [fm^-1] (eF = %.3f [fm^-4])\n", freezeoutTemperature, freezeoutEnergyDensity);
-
+  #ifndef IDEAL
+  printf("Regulating viscous currents using : ");
+  #ifdef REG_SCHEME_1
+  printf("Regulation Scheme 1\n");
+  #endif
+  #ifdef REG_SCHEME_2
+  printf("Regulation Scheme 2\n");
+  #endif
+  #ifdef REG_SCHEME_3
+  printf("Regulation Scheme 3\n");
+  #endif
+  #endif
   // allocate memory
   allocateHostMemory(nElements);
 
@@ -389,7 +400,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     // Read in source terms from particles
     if (initialConditionType == 12) {
         if (n <= numberOfSourceFiles) readInSource(n, latticeParams, initCondParams, hydroParams, rootDirectory);
-        else noSource(latticeParams, initCondParams);
+        else if (n == numberOfSourceFiles + 1) noSource(latticeParams, initCondParams);
     }
 
     rungeKutta2(t, dt, q, Q, latticeParams, hydroParams);

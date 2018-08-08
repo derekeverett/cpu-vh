@@ -24,9 +24,7 @@
 
 #include <omp.h>
 
-//choose a regulation scheme
-#define REG_SCHEME_1
-//#define REG_SCHEME_2
+#define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
 /**************************************************************************************************************************************************\
 void setNeighborCells(const PRECISION * const __restrict__ data,
@@ -697,7 +695,7 @@ regulateDissipativeCurrents(PRECISION t,
 
 	//only cells with Temperature < T_reg have dissipative currents regulated
 	PRECISION hbarc = 0.197326938;
-	PRECISION T_reg = 0.1; //GeV
+	PRECISION T_reg = 0.100; //GeV
 	T_reg /= hbarc; //critical temperature for regulation in fm^-1
 	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
 
@@ -783,7 +781,8 @@ regulateDissipativeCurrents(PRECISION t,
 				facBulk = tanh(rhoBulk) / rhoBulk;
 				if (fabs(rhoBulk) < 1.e-7) facBulk = 1.0;
 
-				#else
+				#endif
+				#ifdef REG_SCHEME_2
 
 				//new scheme from appendix C in arXiv:1804.10557v1
 
@@ -821,7 +820,16 @@ regulateDissipativeCurrents(PRECISION t,
 
 				PRECISION invReynoldsBulk = fabs(Pi) / p[s];
 				facBulk = invReynoldsBulk / a;
-
+				#endif
+				#ifdef REG_SCHEME_3
+				//Try a scheme which simply forces the shear and bulk stresses to be zero (smoothly) in dilute regions
+				PRECISION z = e_reg / e[s];
+				PRECISION z_flat = 1.0;
+				PRECISION z_width = 0.25;
+	      PRECISION arg = (-1.0) * (z - z_flat) * (z - z_flat) / (2.0 * z_width * z_width);
+	      arg = arg * THETA_FUNCTION(z - z_flat);
+				facShear = exp(arg);
+				facBulk = exp(arg);
 				#endif
 
 				//ensure that regulation only happens far outside the FO surface!
