@@ -128,10 +128,10 @@ void * latticeParams, void * hydroParams)
         PRECISION betan_np = un_np / T;
 
         //calculate time derivatives with backwards differences
-        PRECISION ddt_betat = (betat_p - betat) / dt;
-        PRECISION ddt_betax = (betax_p - betax) / dt;
-        PRECISION ddt_betay = (betay_p - betay) / dt;
-        PRECISION ddt_betan = (betan_p - betan) / dt;
+        PRECISION ddt_betat = (betat - betat_p) / dt;
+        PRECISION ddt_betax = (betax - betax_p) / dt;
+        PRECISION ddt_betay = (betay - betay_p) / dt;
+        PRECISION ddt_betan = (betan - betan_p) / dt;
 
         //calculate spatial derivatives using central differences
         PRECISION ddx_betat = (betat_xp - betat_xm) / (2.0 * dx);
