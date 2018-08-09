@@ -12,6 +12,9 @@
 #include <ctime>
 #include <iostream>
 
+//for FO surface
+#include <vector>
+
 //for cornelius and writing freezeout file
 #include <fstream>
 #include "cornelius-c++-1.3/cornelius.cpp"
@@ -29,6 +32,7 @@
 #include "../include/EnergyMomentumTensor.h"
 #include "../include/EquationOfState.h"
 #include "../include/DynamicalSources.h"
+#include "../include/FreezeOut.h"
 
 #include "../include/Vorticity.h" //for polarization studies
 
@@ -152,6 +156,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   Cornelius cor;
   cor.init(dim, freezeoutEnergyDensity, lattice_spacing);
 
+  //declare an array of FO_Element to hold FO cell info
+  std::vector<FO_Element> fo_surf;
+
   double ****energy_density_evoution;
   energy_density_evoution = calloc4dArray(energy_density_evoution, FOFREQ+1, nx, ny, nz);
 
@@ -162,6 +169,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   #else
   int n_hydro_vars = 16; //u0, u1, u2, u3, e, pi00, pi01, pi02, pi03, pi11, pi12, pi13, pi22, pi23, pi33, Pi, the temperature and pressure are calclated with EoS
   #endif
+
+  //rather than declaring a multidimensional array, declare a vector of FO_elements to which we save the hydro info?
+  //but we need to interpolate between cells, and this is easily done with a multidimensional array ...?
   double *****hydrodynamic_evoution;
   hydrodynamic_evoution = calloc5dArray(hydrodynamic_evoution, n_hydro_vars, FOFREQ+1, nx, ny, nz);
 
@@ -265,6 +275,8 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
               //write centroid and normal of each surface element to file
               for (int i = 0; i < cor.get_Nelements(); i++)
               {
+                //declare a new fo cell to hold info, later push back to vector
+                FO_Element fo_cell;
                 double temp = 0.0; //temporary variable
                 //first write the position of the centroid of surface element
                 double cell_tau;
@@ -283,19 +295,48 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 
                 if (FOFORMAT == 0) //write ASCII file
                 {
-                  if (FOTEST) {freezeoutSurfaceFile << cell_tau << " ";}
-                  else {freezeoutSurfaceFile << cor.get_centroid_elem(i,0) + cell_tau << " ";}
+                  if (FOTEST)
+                  {
+                    freezeoutSurfaceFile << cell_tau << " ";
+                    fo_cell.tau = cell_tau;
+                  }
+                  else
+                  {
+                    freezeoutSurfaceFile << cor.get_centroid_elem(i,0) + cell_tau << " ";
+                    fo_cell.tau = (cor.get_centroid_elem(i,0) + cell_tau);
+                  }
                   freezeoutSurfaceFile << cor.get_centroid_elem(i,1) + cell_x << " ";
+                  fo_cell.x = cor.get_centroid_elem(i,1) + cell_x;
                   freezeoutSurfaceFile << cor.get_centroid_elem(i,2) + cell_y << " ";
-                  if (dim == 4) freezeoutSurfaceFile << cor.get_centroid_elem(i,3) + cell_z << " ";
-                  else freezeoutSurfaceFile << cell_z << " ";
+                  fo_cell.y = cor.get_centroid_elem(i,2) + cell_y;
+                  if (dim == 4)
+                  {
+                    freezeoutSurfaceFile << cor.get_centroid_elem(i,3) + cell_z << " ";
+                    fo_cell.eta = cor.get_centroid_elem(i,3) + cell_z;
+                  }
+                  else
+                  {
+                    freezeoutSurfaceFile << cell_z << " ";
+                    fo_cell.eta = cell_z;
+                  }
                   //then the (covariant?) surface normal element; check jacobian factors of tau for milne coordinates!
                   //acording to cornelius user guide, corenelius returns covariant components of normal vector without jacobian factors
                   freezeoutSurfaceFile << t * cor.get_normal_elem(i,0) << " ";
+                  fo_cell.dat = t * cor.get_normal_elem(i,0);
                   freezeoutSurfaceFile << t * cor.get_normal_elem(i,1) << " ";
+                  fo_cell.dax = t * cor.get_normal_elem(i,1);
                   freezeoutSurfaceFile << t * cor.get_normal_elem(i,2) << " ";
-                  if (dim == 4) freezeoutSurfaceFile << t * cor.get_normal_elem(i,3) << " ";
-                  else freezeoutSurfaceFile << 0.0 << " ";
+                  fo_cell.day = t * cor.get_normal_elem(i,2);
+                  if (dim == 4)
+                  {
+                    freezeoutSurfaceFile << t * cor.get_normal_elem(i,3) << " ";
+                    fo_cell.dan = t * cor.get_normal_elem(i,3);
+                  }
+                  else
+                  {
+                    freezeoutSurfaceFile << 0.0 << " ";
+                    fo_cell.dan = 0.0;
+                  }
                   //write all the necessary hydro dynamic variables by first performing linear interpolation from values at
                   //corners of hypercube
 
@@ -368,6 +409,10 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                     freezeoutSurfaceFile << endl;
                   }
                 } // if (FOFORMAT == 0)
+
+                //add the fo cell to fo surface
+                fo_surf.push_back(fo_cell);
+
               } //for (int i = 0; i < cor.get_Nelements(); i++)
             } // for (int iz = 0; iz < dimZ; iz++)
           } // for (int iy = 0; iy < ny-1; iy++)

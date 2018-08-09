@@ -8,12 +8,10 @@ const char *address = "";
 
 HYDRO::HYDRO()
 {
-
 }
 
 HYDRO::~HYDRO()
 {
-
 }
 
 int HYDRO::run_hydro(int argc, char **argv)
@@ -44,8 +42,10 @@ int HYDRO::run_hydro(int argc, char **argv)
 	//=========================================
 	// Set parameters from configuration files
 	//=========================================
-	config_t latticeConfig, initCondConfig, hydroConfig;
 
+  //this parser requires libconfig
+  /*
+	config_t latticeConfig, initCondConfig, hydroConfig;
 	// Set lattice parameters from configuration file
 	config_init(&latticeConfig);
 	loadLatticeParameters(&latticeConfig, cli.configDirectory, &latticeParams);
@@ -58,6 +58,12 @@ int HYDRO::run_hydro(int argc, char **argv)
 	config_init(&hydroConfig);
 	loadHydroParameters(&hydroConfig, cli.configDirectory, &hydroParams);
 	config_destroy (&hydroConfig);
+  */
+
+  //this (simpler) parser doesnt require libconfig
+  readLatticeParameters(cli.configDirectory, &latticeParams);
+  readInitialConditionParameters(cli.configDirectory, &initCondParams);
+  readHydroParameters(cli.configDirectory, &hydroParams);
 
   //clock
   double sec = 0.0;

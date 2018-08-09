@@ -5,6 +5,7 @@
  *      Author: bazow
  */
 #include <math.h> // for math functions
+#include <stdio.h>
 
 #include "../include/EnergyMomentumTensor.h"
 #include "../include/DynamicalVariables.h"

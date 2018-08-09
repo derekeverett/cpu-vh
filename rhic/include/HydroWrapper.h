@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h> // for printf
 #include <sys/time.h> // for timing
-#include <unistd.h>		// for current working directory
-#include <libconfig.h>
+#include <unistd.h>  // for current working directory
+//#include <libconfig.h>
 #include <vector>
 
 #include "../include/CommandLineArguments.h"

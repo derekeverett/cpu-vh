@@ -1,0 +1,21 @@
+FIND_PATH(CONFIG_INCLUDE_DIR libconfig.h /usr/include /usr/local/include /home/everett.165/libconfig-1.5/lib)
+
+FIND_LIBRARY(CONFIG_LIBRARY NAMES config PATH /usr/lib /usr/local/lib /home/everett.165/libconfig-1.5/lib/.libs) 
+
+IF (CONFIG_INCLUDE_DIR AND CONFIG_LIBRARY)
+    SET(CONFIG_FOUND TRUE)
+ENDIF ( CONFIG_INCLUDE_DIR AND CONFIG_LIBRARY)
+
+IF (CONFIG_FOUND)
+    MESSAGE(STATUS "Found Config: ${CONFIG_LIBRARY}")
+ELSE(CONFIG_FOUND)
+    IF (Config_FIND_REQUIRED)
+	IF(NOT CONFIG_INCLUDE_DIR)
+	    MESSAGE(FATAL_ERROR "Could not find LibConfig header file!")
+	ENDIF(NOT CONFIG_INCLUDE_DIR)
+
+	IF(NOT CONFIG_LIBRARY)
+	    MESSAGE(FATAL_ERROR "Could not find LibConfig library file!")
+	ENDIF(NOT CONFIG_LIBRARY)
+    ENDIF (Config_FIND_REQUIRED)
+ENDIF (CONFIG_FOUND)

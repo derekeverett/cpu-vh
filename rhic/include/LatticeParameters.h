@@ -8,7 +8,7 @@
 #ifndef LATTICEPARAMETERS_H_
 #define LATTICEPARAMETERS_H_
 
-#include <libconfig.h>
+//#include <libconfig.h>
 
 #define N_GHOST_CELLS_M 2
 #define N_GHOST_CELLS_P 2
@@ -30,6 +30,10 @@ struct LatticeParameters
 	double latticeSpacingProperTime;
 };
 
-void loadLatticeParameters(config_t *cfg, const char* configDirectory, void * params);
+//requires libconfig
+//void loadLatticeParameters(config_t *cfg, const char* configDirectory, void * params);
+
+//doesnt require libconfig
+void readLatticeParameters(const char* configDirectory, void * params);
 
 #endif /* LATTICEPARAMETERS_H_ */
