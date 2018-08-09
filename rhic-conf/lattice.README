@@ -1,9 +1,0 @@
-numLatticePointsX=135
-numLatticePointsY=135
-numLatticePointsRapidity=1
-numProperTimePoints=10000
-
-latticeSpacingX=0.15
-latticeSpacingY=0.15
-latticeSpacingRapidity=0.1
-latticeSpacingProperTime=0.05
