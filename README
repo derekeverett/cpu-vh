@@ -1,3 +1,8 @@
+The following papers should be cited when referring to cpu-vh:
+1) D. Bazow, U. W. Heinz and M. Strickland, Comput. Phys. Commun. 225, 92 (2018) doi:10.1016/j.cpc.2017.01.015
+[arXiv:1608.06577 [physics.comp-ph]]
+2) (L. Du) in preparation
+
 # cpu-vh
 cpu-vh is a code designed for the hydrodynamic simulation of heavy ion collisions.
 Please see arXiv:1608.06577 for a description of the physics, as well as the KT algorithm which 
