@@ -22,7 +22,9 @@
 #include "../include/EquationOfState.h"
 #include "../include/FiniteDifference.h" //temp
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 

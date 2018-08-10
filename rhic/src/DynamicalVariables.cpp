@@ -11,7 +11,9 @@
 #include "../include/EnergyMomentumTensor.h"
 #include "../include/FullyDiscreteKurganovTadmorScheme.h" // for ghost cells
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 //#define ROW_MAJ
 

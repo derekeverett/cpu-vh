@@ -18,7 +18,9 @@
 #include "../include/HydroParameters.h"
 #include "../include/EquationOfState.h"
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
