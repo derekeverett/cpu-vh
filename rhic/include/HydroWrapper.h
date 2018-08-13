@@ -32,7 +32,7 @@ class HYDRO {
     ~HYDRO();
 
     std::vector<double> initial_energy_density;
-    std::vector<double> initial_pressure;
+    //std::vector<double> initial_pressure;
     std::vector<double> initial_ut;
     std::vector<double> initial_ux;
     std::vector<double> initial_uy;
@@ -52,6 +52,9 @@ class HYDRO {
     //run the hydro until freezeout
     int run_hydro(int, char **);
 
+    //run the hydro until freezeout (no command line arguments)
+    int run_hydro_no_cli();
+
     //run the hydro for one time step
     //int run_hydro_time_step();
 
@@ -61,29 +64,29 @@ class HYDRO {
     //support to initilialize the energy density from a vector - useful for JETSCAPE
     //note units of argument should be GeV / fm^3
     //then we convert to fm^(-4)
-    //void initialize_ed_from_vector(std::vector<double>);
+    void initialize_from_vector(std::vector<double> e);
 
 
     //support to initilialize all components of T^\mu\nu from vectors - useful for JETSCAPE
-    /*
-    void initialize_from_vectors(std::vector<double>&, //e
-                            std::vector<double>&, //p
-                            std::vector<double>&, //ut
-                            std::vector<double>&, //ux
-                            std::vector<double>&, //uy
-                            std::vector<double>&, //un
-                            std::vector<double>&, //pitt
-                            std::vector<double>&, //pitx
-                            std::vector<double>&, //pity
-                            std::vector<double>&, //pitn
-                            std::vector<double>&, //pixx
-                            std::vector<double>&, //pixy
-                            std::vector<double>&, //pixn
-                            std::vector<double>&, //piyy
-                            std::vector<double>&, //piyn
-                            std::vector<double>&, //pinn
-                            std::vector<double>&); //Pi
-    */
+
+    void initialize_from_vectors(std::vector<double>& e, //e
+                            //std::vector<double>& p, //p
+                            std::vector<double>& ut, //ut
+                            std::vector<double>& ux, //ux
+                            std::vector<double>& uy, //uy
+                            std::vector<double>& un, //un
+                            std::vector<double>& pitt, //pitt
+                            std::vector<double>& pitx, //pitx
+                            std::vector<double>& pity, //pity
+                            std::vector<double>& pitn, //pitn
+                            std::vector<double>& pixx, //pixx
+                            std::vector<double>& pixy, //pixy
+                            std::vector<double>& pixn, //pixn
+                            std::vector<double>& piyy, //piyy
+                            std::vector<double>& piyn, //piyn
+                            std::vector<double>& pinn, //pinn
+                            std::vector<double>& Pi); //Pi
+
 };
 
 #endif
