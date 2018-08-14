@@ -1,9 +1,0 @@
-initialProperTimePoint=0.5
-shearViscosityToEntropyDensity=0.2
-freezeoutTemperatureGeV=0.3 
-//freezeoutTemperatureGeV=0.155
-
-# Initial condition to use for \pi^{\mu\nu}
-#		1 - use Navier-Stokes value
-#		0 - initialize to zero
-initializePimunuNavierStokes=1
