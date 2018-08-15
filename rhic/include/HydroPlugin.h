@@ -8,6 +8,8 @@
 #ifndef HYDROPLUGIN_H_
 #define HYDROPLUGIN_H_
 
-void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir);
+#include "HydroInitialTmunu.h"
+
+void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir, HydroInitialTmunu init_tmunu);
 
 #endif /* HYDROPLUGIN_H_ */

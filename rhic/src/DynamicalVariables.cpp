@@ -5,6 +5,7 @@
 *      Author: bazow
 */
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../include/DynamicalVariables.h"
 #include "../include/LatticeParameters.h"
@@ -184,17 +185,17 @@ void setConservedVariables(double t, void * latticeParams) {
 				PRECISION e_s = e[s];
 				PRECISION p_s = p[s];
 
-				PRECISION pitt_s = 0;
-				PRECISION pitx_s = 0;
-				PRECISION pity_s = 0;
-				PRECISION pitn_s = 0;
+				PRECISION pitt_s = 0.;
+				PRECISION pitx_s = 0.;
+				PRECISION pity_s = 0.;
+				PRECISION pitn_s = 0.;
 				#ifdef PIMUNU
 				pitt_s = q->pitt[s];
 				pitx_s = q->pitx[s];
 				pity_s = q->pity[s];
 				pitn_s = q->pitn[s];
 				#endif
-				PRECISION Pi_s = 0;
+				PRECISION Pi_s = 0.;
 				#ifdef PI
 				Pi_s = q->Pi[s];
 				#endif

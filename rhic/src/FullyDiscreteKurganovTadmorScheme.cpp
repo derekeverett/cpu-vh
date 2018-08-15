@@ -697,7 +697,7 @@ regulateDissipativeCurrents(PRECISION t,
 
 	//only cells with Temperature < T_reg have dissipative currents regulated
 	PRECISION hbarc = 0.197326938;
-	PRECISION T_reg = 0.100; //GeV
+	PRECISION T_reg = 0.1; //GeV
 	T_reg /= hbarc; //critical temperature for regulation in fm^-1
 	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
 
@@ -751,10 +751,10 @@ regulateDissipativeCurrents(PRECISION t,
 				// 'old'  scheme
 				#ifdef REG_SCHEME_1
 
-				PRECISION xi0 = (PRECISION)(1.0);
-				PRECISION rhomax = (PRECISION)(10.0);
-				//PRECISION xi0 = (PRECISION)(0.1);
-				//PRECISION rhomax = (PRECISION)(0.8);
+				//PRECISION xi0 = (PRECISION)(1.0);
+				//PRECISION rhomax = (PRECISION)(10.0);
+				PRECISION xi0 = (PRECISION)(0.1);
+			  PRECISION rhomax = (PRECISION)(1.0);
 				PRECISION pipi = pitt*pitt-2*pitx*pitx-2*pity*pity+pixx*pixx+2*pixy*pixy+piyy*piyy-2*pitn*pitn*t2+2*pixn*pixn*t2+2*piyn*piyn*t2+pinn*pinn*t2*t2;
 				PRECISION spipi = sqrt(fabs(pipi));
 

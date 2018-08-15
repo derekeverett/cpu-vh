@@ -18,6 +18,7 @@
 #include "../include/HydroParameters.h"
 #include "../include/HydroPlugin.h"
 
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -69,23 +70,23 @@ class HYDRO {
 
     //support to initilialize all components of T^\mu\nu from vectors - useful for JETSCAPE
 
-    void initialize_from_vectors(std::vector<double>& e, //e
+    void initialize_from_vectors(std::vector<double> e, //e
                             //std::vector<double>& p, //p
-                            std::vector<double>& ut, //ut
-                            std::vector<double>& ux, //ux
-                            std::vector<double>& uy, //uy
-                            std::vector<double>& un, //un
-                            std::vector<double>& pitt, //pitt
-                            std::vector<double>& pitx, //pitx
-                            std::vector<double>& pity, //pity
-                            std::vector<double>& pitn, //pitn
-                            std::vector<double>& pixx, //pixx
-                            std::vector<double>& pixy, //pixy
-                            std::vector<double>& pixn, //pixn
-                            std::vector<double>& piyy, //piyy
-                            std::vector<double>& piyn, //piyn
-                            std::vector<double>& pinn, //pinn
-                            std::vector<double>& Pi); //Pi
+                            std::vector<double> ut, //ut
+                            std::vector<double> ux, //ux
+                            std::vector<double> uy, //uy
+                            std::vector<double> un, //un
+                            std::vector<double> pitt, //pitt
+                            std::vector<double> pitx, //pitx
+                            std::vector<double> pity, //pity
+                            std::vector<double> pitn, //pitn
+                            std::vector<double> pixx, //pixx
+                            std::vector<double> pixy, //pixy
+                            std::vector<double> pixn, //pixn
+                            std::vector<double> piyy, //piyy
+                            std::vector<double> piyn, //piyn
+                            std::vector<double> pinn, //pinn
+                            std::vector<double> Pi); //Pi
 
 };
 

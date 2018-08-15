@@ -121,7 +121,7 @@ void readLatticeParameters(const char* configDirectory, void * params) {
 		latticeSpacingProperTime = atof(line.c_str());
 
 	}
-	else std::cerr << "No configuration file  %s found for lattice parameters\n";
+	else std::cerr << "No configuration file found for lattice parameters\n";
 
 	struct LatticeParameters * lattice = (struct LatticeParameters *) params;
 	lattice->numLatticePointsX = numLatticePointsX;

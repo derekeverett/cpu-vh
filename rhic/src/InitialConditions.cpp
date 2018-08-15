@@ -10,6 +10,7 @@
 #include <stdlib.h> //TEMP
 
 #include "../include/InitialConditions.h"
+#include "../include/HydroInitialTmunu.h"
 #include "../include/DynamicalVariables.h"
 #include "../include/LatticeParameters.h"
 #include "../include/InitialConditionParameters.h"
@@ -108,7 +109,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     FILE *fileIn;
     char fname[255];
 
-    //energy density
+    //energy density and pressure
     sprintf(fname, "%s/%s", rootDirectory, "/input/e.dat");
     fileIn = fopen(fname, "r");
     if (fileIn == NULL)
@@ -123,6 +124,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
                     int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     e[s] =  (PRECISION) value;
+                    p[s] = equilibriumPressure( e[s] );
                     //ep[s] = (PRECISION) value;
                     //printf("e [ %d ] = %f\n", s, e[s]);
                 }
@@ -132,6 +134,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     fclose(fileIn);
 
     //pressure
+    /*
     sprintf(fname, "%s/%s", rootDirectory, "/input/p.dat");
     fileIn = fopen(fname, "r");
     if (fileIn == NULL)
@@ -151,6 +154,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
         }
     }
     fclose(fileIn);
+    */
 
     //ut
     sprintf(fname, "%s/%s", rootDirectory, "/input/ut.dat");
@@ -498,19 +502,19 @@ void setFluidVelocityInitialCondition(void * latticeParams, void * hydroParams) 
 				PRECISION ux = 0.;
 				PRECISION uy = 0.;
 				PRECISION un = 0.;
-				u->ux[s] = 0;
-				u->uy[s] = 0;
-				u->un[s] = 0;
+				u->ux[s] = 0.;
+				u->uy[s] = 0.;
+				u->un[s] = 0.;
 				u->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
 
-        up->ux[s] = 0;
-				up->uy[s] = 0;
-				up->un[s] = 0;
+        up->ux[s] = 0.;
+				up->uy[s] = 0.;
+				up->un[s] = 0.;
 				up->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
-        
-        uS->ux[s] = 0;
-				uS->uy[s] = 0;
-				uS->un[s] = 0;
+
+        uS->ux[s] = 0.;
+				uS->uy[s] = 0.;
+				uS->un[s] = 0.;
 				uS->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
 			}
 		}
@@ -1190,46 +1194,44 @@ void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * i
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
 void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParams) {
-	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
-	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
+  struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
+  struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
-	int nx = lattice->numLatticePointsX;
-	int ny = lattice->numLatticePointsY;
-	int nz = lattice->numLatticePointsRapidity;
+  int nx = lattice->numLatticePointsX;
+  int ny = lattice->numLatticePointsY;
+  int nz = lattice->numLatticePointsRapidity;
 
-	double dx = lattice->latticeSpacingX;
-	double dy = lattice->latticeSpacingY;
-	double dz = lattice->latticeSpacingRapidity;
+  double dx = lattice->latticeSpacingX;
+  double dy = lattice->latticeSpacingY;
+  double dz = lattice->latticeSpacingRapidity;
 
-	double Lx = ( (nx-1)/2.)*dx;
-	double Ly = ( (ny-1)/2.)*dy;
+  double Lx = ( (nx-1)/2.)*dx;
+  double Ly = ( (ny-1)/2.)*dy;
 
-	for(int i = 2; i < nx+2; ++i) {
-		double x = (i-2 - (nx-1)/2.)*dx;
-		for(int j = 2; j < ny+2; ++j) {
-			double y = (j-2 - (ny-1)/2.)*dy;
+  for(int i = 2; i < nx+2; ++i) {
+    double x = (i-2 - (nx-1)/2.)*dx;
+    for(int j = 2; j < ny+2; ++j) {
+      double y = (j-2 - (ny-1)/2.)*dy;
 
-			for(int k = 2; k < nz+2; ++k) {
-				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+      for(int k = 2; k < nz+2; ++k) {
+        int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
-				double xc = 0.5;
-				double yc = 0.5;
-			   double beta = 50.0;
-			   double pr = 1.0 + 1e-1*exp(-beta*((x-xc)*(x-xc)+(y-yc)*(y-yc)));
+        double xc = 0.5;
+        double yc = 0.5;
+        double beta = 50.0;
+        double pr = 1.0 + 1e-1*exp(-beta*((x-xc)*(x-xc)+(y-yc)*(y-yc)));
 
-				e[s] = (PRECISION) (pr/(1.4-1.));
-
-				p[s] = e[s]/3;
-				u->ux[s] = 0;
-				u->uy[s] = (1+cos(2*M_PI*x/Lx))*(1+cos(2*M_PI*y/Ly));
-//				u->uy[s] = 0;
-				u->un[s] = 0;
-				u->ut[s] = sqrt(1+u->uy[s]*u->uy[s]);
-			}
-		}
-	}
+        e[s] = (PRECISION) (pr/(1.4-1.));
+        p[s] = e[s]/3.0;
+        u->ux[s] = 0;
+        u->uy[s] = (1+cos(2*M_PI*x/Lx))*(1+cos(2*M_PI*y/Ly));
+        //u->uy[s] = 0;
+        u->un[s] = 0;
+        u->ut[s] = sqrt(1+u->uy[s]*u->uy[s]);
+      }
+    }
+  }
 }
-
 
 /*********************************************************************************************************\
  * Initial conditions to use.
@@ -1318,9 +1320,113 @@ void setInitialConditions(void * latticeParams, void * initCondParams, void * hy
             setICfromSource(latticeParams, initCondParams, hydroParams, rootDirectory);
             return;
         }
+
 		default: {
 			printf("Initial condition type not defined. Exiting ...\n");
 			exit(-1);
 		}
 	}
+}
+
+void setICFromEnergyDensityVector(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu)
+{
+  printf("Initialize from initial energy density vector ...\n");
+  const double hbarc = 0.197326938;
+  struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
+  struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
+  struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
+  int nx = lattice->numLatticePointsX;
+  int ny = lattice->numLatticePointsY;
+  int nz = lattice->numLatticePointsRapidity;
+
+  for (int i = 2; i < nx+2; ++i) {
+    for (int j = 2; j < ny+2; ++j) {
+      for (int k = 2; k < nz+2; ++k) {
+        //s runs over hydro grid with ghost cells
+        int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+        //sm runs over preequilibrium grid without ghost cells
+        int im = i-2;
+        int jm = j-2;
+        int km = k-2;
+        int sm = columnMajorLinearIndex(im, jm, km, nx, ny, nz);
+
+        e[s] =  (PRECISION) (init_tmunu.e_in[sm] / hbarc) + (PRECISION)(1.0e-3);
+        p[s] = equilibriumPressure( e[s] );
+        u->ut[s] = 1.0;
+        u->ux[s] = 0.0;
+        u->uy[s] = 0.0;
+        u->un[s] = 0.0;
+        up->ut[s] = 1.0; //set previous step to same value
+        up->ux[s] = 0.0; //...
+        up->uy[s] = 0.0;
+        up->un[s] = 0.0;
+        #ifdef PIMUNU
+        q->pitt[s] = 0.0;
+        q->pitx[s] = 0.0;
+        q->pity[s] = 0.0;
+        q->pitn[s] = 0.0;
+        q->pixx[s] = 0.0;
+        q->pixy[s] = 0.0;
+        q->pixn[s] = 0.0;
+        q->piyy[s] = 0.0;
+        q->piyn[s] = 0.0;
+        q->pinn[s] = 0.0;
+        #endif
+        #ifdef PI
+        q->Pi[s] = 0.0;
+        #endif
+      }
+    } // for (int j = 2; j < ny+2; ++j)
+  } //for (int i = 2; i < nx+2; ++i)
+}
+
+void setICFromPreequilVectors(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu)
+{
+  printf("Initialize from preequilibrium vectors ...\n");
+  const double hbarc = 0.197326938;
+  struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
+  struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
+  struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
+  int nx = lattice->numLatticePointsX;
+  int ny = lattice->numLatticePointsY;
+  int nz = lattice->numLatticePointsRapidity;
+
+  for (int i = 2; i < nx+2; ++i) {
+    for (int j = 2; j < ny+2; ++j) {
+      for (int k = 2; k < nz+2; ++k) {
+        //s runs over hydro grid with ghost cells
+        int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+        //sm runs over preequilibrium grid without ghost cells
+        int im = i-2;
+        int jm = j-2;
+        int km = k-2;
+        int sm = columnMajorLinearIndex(im, jm, km, nx, ny, nz);
+        e[s] =  (PRECISION) (init_tmunu.e_in[sm] / hbarc) + (PRECISION)(1.0e-3);
+        p[s] = equilibriumPressure( e[s] );
+        u->ut[s] = (PRECISION) init_tmunu.ut_in[sm];
+        u->ux[s] = (PRECISION) init_tmunu.ux_in[sm];
+        u->uy[s] = (PRECISION) init_tmunu.uy_in[sm];
+        u->un[s] = (PRECISION) init_tmunu.un_in[sm];
+        up->ut[s] = (PRECISION) init_tmunu.ut_in[sm]; //set previous step to same value
+        up->ux[s] = (PRECISION) init_tmunu.ux_in[sm]; //...
+        up->uy[s] = (PRECISION) init_tmunu.uy_in[sm];
+        up->un[s] = (PRECISION) init_tmunu.un_in[sm];
+        #ifdef PIMUNU
+        q->pitt[s] = (PRECISION) (init_tmunu.pitt_in[sm] / hbarc);
+        q->pitx[s] = (PRECISION) (init_tmunu.pitx_in[sm] / hbarc);
+        q->pity[s] = (PRECISION) (init_tmunu.pity_in[sm] / hbarc);
+        q->pitn[s] = (PRECISION) (init_tmunu.pitn_in[sm] / hbarc);
+        q->pixx[s] = (PRECISION) (init_tmunu.pixx_in[sm] / hbarc);
+        q->pixy[s] = (PRECISION) (init_tmunu.pixy_in[sm] / hbarc);
+        q->pixn[s] = (PRECISION) (init_tmunu.pixn_in[sm] / hbarc);
+        q->piyy[s] = (PRECISION) (init_tmunu.piyy_in[sm] / hbarc);
+        q->piyn[s] = (PRECISION) (init_tmunu.piyn_in[sm] / hbarc);
+        q->pinn[s] = (PRECISION) (init_tmunu.pinn_in[sm] / hbarc);
+        #endif
+        #ifdef PI
+        q->Pi[s] = (PRECISION) (init_tmunu.Pi_in[sm] / hbarc);
+        #endif
+      }
+    } // for (int j = 2; j < ny+2; ++j)
+  } //for (int i = 2; i < nx+2; ++i)
 }

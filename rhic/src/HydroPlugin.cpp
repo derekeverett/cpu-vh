@@ -25,6 +25,7 @@
 #include "../include/DynamicalVariables.h"
 #include "../include/LatticeParameters.h"
 #include "../include/InitialConditionParameters.h"
+#include "../include/HydroInitialTmunu.h"
 #include "../include/HydroParameters.h"
 #include "../include/FileIO.h"
 #include "../include/InitialConditions.h"
@@ -46,10 +47,10 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(e, t, outputDir, "e", latticeParams);
   output(u->ux, t, outputDir, "ux", latticeParams);
   output(u->uy, t, outputDir, "uy", latticeParams);
-  //	output(u->un, t, outputDir, "un", latticeParams);
+  output(u->un, t, outputDir, "un", latticeParams);
   output(u->ut, t, outputDir, "ut", latticeParams);
-  //	output(q->ttt, t, outputDir, "ttt", latticeParams);
-  //	output(q->ttn, t, outputDir, "ttn", latticeParams);
+  output(q->ttt, t, outputDir, "ttt", latticeParams);
+  output(q->ttn, t, outputDir, "ttn", latticeParams);
   #ifdef PIMUNU
   output(q->pixx, t, outputDir, "pixx", latticeParams);
   output(q->pixy, t, outputDir, "pixy", latticeParams);
@@ -60,7 +61,7 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(regFacShear, t, outputDir, "regFacShear", latticeParams);
   #endif
   #ifdef PI
-  //output(q->Pi, t, outputDir, "Pi", latticeParams);
+  output(q->Pi, t, outputDir, "Pi", latticeParams);
   output(regFacBulk, t, outputDir, "regFacBulk", latticeParams);
   #endif
   #ifdef THERMAL_VORTICITY
@@ -71,10 +72,9 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(wmunu->wxn, t, outputDir, "wxn", latticeParams);
   output(wmunu->wyn, t, outputDir, "wyn", latticeParams);
   #endif
-
 }
 
-void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir)
+void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir, HydroInitialTmunu init_tmunu)
 {
   struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
   struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
@@ -106,7 +106,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   double freezeoutTemperatureGeV = hydro->freezeoutTemperatureGeV;
   const double hbarc = 0.197326938;
   const double freezeoutTemperature = freezeoutTemperatureGeV/hbarc;
-  //const double freezeoutEnergyDensity = e0*pow(freezeoutTemperature,4);
   const double freezeoutEnergyDensity = equilibriumEnergyDensity(freezeoutTemperature);
   printf("Grid size = %d x %d x %d\n", nx, ny, nz);
   printf("spatial resolution = (%.3f, %.3f, %.3f)\n", lattice->latticeSpacingX, lattice->latticeSpacingY, lattice->latticeSpacingRapidity);
@@ -148,10 +147,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     lattice_spacing[1] = dx;
     lattice_spacing[2] = dy;
   }
-  else
-  {
-    printf("simulation is not in 3+1D or 2+1D; freezeout finder will not work!\n");
-  }
+  else printf("simulation is not in 3+1D or 2+1D; freezeout finder will not work!\n");
 
   Cornelius cor;
   cor.init(dim, freezeoutEnergyDensity, lattice_spacing);
@@ -187,12 +183,19 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   std::string surf_fname = std::string(outputDir) + std::string("/surface.dat");
   if (FOFORMAT == 0) freezeoutSurfaceFile.open(surf_fname);
   else freezeoutSurfaceFile.open(surf_fname, ios::binary);
+
   /************************************************************************************	\
   * Fluid dynamic initialization
   /************************************************************************************/
   double t = t0;
-  // generate initial conditions
-  setInitialConditions(latticeParams, initCondParams, hydroParams, rootDirectory);
+  // generate initial conditions from internal routines or reading from files
+  if (initialConditionType < 13) setInitialConditions(latticeParams, initCondParams, hydroParams, rootDirectory);
+  //set initial conditions from initial energy density vector
+  else if (initialConditionType == 13) setICFromEnergyDensityVector(latticeParams, initCondParams, hydroParams, rootDirectory, init_tmunu);
+  //set initial conditions from preequilibrium vectors
+  else if (initialConditionType == 14) setICFromPreequilVectors(latticeParams, initCondParams, hydroParams, rootDirectory, init_tmunu);
+  else {printf("NOT A VALID INITIAL CONDITION! \n"); exit(-1);}
+
   // Calculate conserved quantities
   setConservedVariables(t, latticeParams);
   // impose boundary conditions with ghost cells
@@ -205,12 +208,10 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   int jctr = (ny % 2 == 0) ? ncy/2 : (ncy-1)/2;
   int kctr = (nz % 2 == 0) ? ncz/2 : (ncz-1)/2;
   int sctr = columnMajorLinearIndex(ictr, jctr, kctr, ncx, ncy, ncz);
-
+  
   std::clock_t t1,t2;
-
   double totalTime = 0;
   int nsteps = 0;
-
   int accumulator1 = 0;
   int accumulator2 = 0;
   // evolve in time
@@ -252,7 +253,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     else start = 0;
     if (nFO == FOFREQ - 1) //call the freezeout finder should this be put before the values are set?
     {
-
       //besides writing centroid and normal to file, write all the hydro variables
       int dimZ;
       if (dim == 4) dimZ = nz-1; //enter the loop over iz, and avoid problems at boundary
@@ -434,7 +434,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
       }
     }
     if (accumulator1 == 0) accumulator2 += 1;
-    if (accumulator2 >= FOFREQ+1) //only break once freezeout finder has had a chance to search/write to file
+    if (accumulator2 >= FOFREQ + 1) //only break once freezeout finder has had a chance to search/write to file
     {
       printf("\nAll cells have dropped below freezeout energy density\n");
       break;
@@ -449,6 +449,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     }
 
     rungeKutta2(t, dt, q, Q, latticeParams, hydroParams);
+
     t2 = std::clock();
     double delta_time = (t2 - t1) / (double)(CLOCKS_PER_SEC / 1000);
     if ((n-1) % FREQ == 0) printf("(Elapsed time: %.3f ms)\n",delta_time);
@@ -471,7 +472,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   * Deallocate host memory
   /************************************************************************************/
   freeHostMemory();
-
   //Deallocate memory used for freezeout finding
   free4dArray(energy_density_evoution, FOFREQ+1, nx, ny);
   free5dArray(hydrodynamic_evoution, n_hydro_vars, FOFREQ+1, nx, ny);

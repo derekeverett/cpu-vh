@@ -6,6 +6,7 @@
  */
 #include <math.h> // for math functions
 #include <stdio.h>
+#include <cstdlib>
 
 #include "../include/EnergyMomentumTensor.h"
 #include "../include/DynamicalVariables.h"
@@ -14,7 +15,8 @@
 #include "../include/FullyDiscreteKurganovTadmorScheme.h" // for const params
 #include "../include/EquationOfState.h"
 
-#define MAX_ITERS 10000 //Maximum number of root iterations
+#define MAX_ITERS_NR 10000 //Maximum number of newton-raphson iterations
+#define MAX_ITERS_BI 100000 //Maximum number of newton-raphson iterations
 const PRECISION ACC = 1.0e-3; //Maximum relative error in energy density
 
 PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRECISION M, PRECISION Pi) {
@@ -23,7 +25,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 	PRECISION e0 = ePrev;	// initial guess for energy density
 
 	//NEWTON-RAPHSON METHOD
-	for (int j = 0; j < MAX_ITERS; ++j) {
+	for (int j = 0; j < MAX_ITERS_NR; ++j) {
 		PRECISION p = equilibriumPressure(e0);
 		PRECISION cs2 = speedOfSoundSquared(e0);
 		PRECISION cst2 = p/e0;
@@ -47,7 +49,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 	PRECISION e_mid = ePrev;
 	PRECISION e_hi = 10.0 * (ePrev + 2.0);
 
-	for (int j = 0; j < MAX_ITERS; ++j) {
+	for (int j = 0; j < MAX_ITERS_BI; ++j) {
 		PRECISION p_lo = equilibriumPressure(e_lo);
 		PRECISION p_mid = equilibriumPressure(e_mid);
 		PRECISION p_hi = equilibriumPressure(e_hi);
@@ -184,10 +186,11 @@ else
 	*e = energyDensityFromConservedVariables(ePrev, M0, M, Pi);
 }
 if (isnan(*e)) {
+	printf("\n Found e nan inside getInferredVariables \n");
 	printf("M0=%.3f,\t M1=%.3f,\t M2=%.3f,\t M3=%.3f\n", M0, M1, M2, M3);
 	printf("ttt=%.3f,\t ttx=%.3f,\t tty=%.3f,\t ttn=%.3f\n", ttt, ttx, tty, ttn);
 	printf("pitt=%.3f,\t pitx=%.3f,\t pity=%.3f,\t pitn=%.3f\n", pitt, pitx, pity, pitn);
-
+	exit(-1);
 }
 	*p = equilibriumPressure(*e);
 	if (*e < 1.e-7) {
