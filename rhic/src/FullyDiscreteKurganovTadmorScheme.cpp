@@ -697,7 +697,7 @@ regulateDissipativeCurrents(PRECISION t,
 
 	//only cells with Temperature < T_reg have dissipative currents regulated
 	PRECISION hbarc = 0.197326938;
-	PRECISION T_reg = 0.1; //GeV
+	PRECISION T_reg = 0.155; //GeV
 	T_reg /= hbarc; //critical temperature for regulation in fm^-1
 	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
 
@@ -835,7 +835,7 @@ regulateDissipativeCurrents(PRECISION t,
 				#endif
 
 				//ensure that regulation only happens far outside the FO surface!
-				if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
+				//if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
 
 				#ifdef PIMUNU
 				currentVars->pitt[s] *= facShear;
@@ -849,10 +849,12 @@ regulateDissipativeCurrents(PRECISION t,
 				currentVars->piyn[s] *= facShear;
 				currentVars->pinn[s] *= facShear;
 				regFacShear[s] = facShear;
+				if(isnan(facShear)) {printf("Found facShear nan \n"); exit(-1);}
 				#endif
 				#ifdef PI
 				currentVars->Pi[s] *= facBulk;
 				regFacBulk[s] = facBulk;
+				if(isnan(facBulk)) {printf("Found facBulk nan \n"); exit(-1);}
 				#endif
 			}
 		}
@@ -887,6 +889,7 @@ void * latticeParams, void * hydroParams
 	//===================================================
 	// STEP 1:
 	//===================================================
+
 	eulerStepKernelSource(t, q, qS, e, p, u, up, ncx, ncy, ncz, dt, dx, dy, dz, etabar);
 	eulerStepKernelX(t, q, qS, u, e, ncx, ncy, ncz, dt, dx);
 	eulerStepKernelY(t, q, qS, u, e, ncx, ncy, ncz, dt, dy);
@@ -903,11 +906,13 @@ void * latticeParams, void * hydroParams
 	//===================================================
 	// STEP 2:
 	//===================================================
+
 	eulerStepKernelSource(t, qS, Q, e, p, uS, u, ncx, ncy, ncz, dt, dx, dy, dz, etabar);
 	eulerStepKernelX(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dx);
 	eulerStepKernelY(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dy);
 	eulerStepKernelZ(t, qS, Q, uS, e, ncx, ncy, ncz, dt, dz);
 	convexCombinationEulerStepKernel(q, Q, ncx, ncy, ncz);
+
 	swapFluidVelocity(&up, &u);
 	setInferredVariablesKernel(Q, e, p, u, t, latticeParams);
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS

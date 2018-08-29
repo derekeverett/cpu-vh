@@ -16,7 +16,7 @@
 #include "../include/EquationOfState.h"
 
 #define MAX_ITERS_NR 10000 //Maximum number of newton-raphson iterations
-#define MAX_ITERS_BI 100000 //Maximum number of newton-raphson iterations
+#define MAX_ITERS_BI 1000000 //Maximum number of newton-raphson iterations
 const PRECISION ACC = 1.0e-3; //Maximum relative error in energy density
 
 PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRECISION M, PRECISION Pi) {
@@ -37,7 +37,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 
 		PRECISION f = e0 + D;
 		PRECISION fp = 1.0 - ( (cs2 - cst2) * (B + D*H - ( (cs2 - cst2)*cst2*D*M0)/e0) ) / (cst2*e0*H);
-
+		if (isnan(f/fp)) {printf("f/fp is nan \n"); exit(-1);}
 		PRECISION e = e0 - f/fp;
 		if (fabsf(e - e0) <=  ACC * fabsf(e)) return e;
 		e0 = e;
@@ -47,7 +47,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 	printf("NR failed to find root. Calling Bisection routine \n");
 	PRECISION e_lo = 0.0;
 	PRECISION e_mid = ePrev;
-	PRECISION e_hi = 10.0 * (ePrev + 2.0);
+	PRECISION e_hi = 2.0 * (ePrev + 1.0);
 
 	for (int j = 0; j < MAX_ITERS_BI; ++j) {
 		PRECISION p_lo = equilibriumPressure(e_lo);
@@ -83,7 +83,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 		if (j == 0 && (f_lo * f_hi > 0.0)) printf("root does not lie within brackets for guess in bisection \n");
 
 		//if we converge within tolerance
-		if ( (e_hi - e_lo) < ACC * e_hi) return e_mid;
+		if ( (e_hi - e_lo) < (ACC * e_hi) / 2.0 ) return e_mid;
 		else
 		{
 			//if root lies between lo and mid
@@ -172,10 +172,15 @@ PRECISION M1 = ttx - pitx;
 PRECISION M2 = tty - pity;
 PRECISION M3 = ttn - pitn;
 PRECISION M = M1 * M1 + M2 * M2 + t * t * M3 * M3;
+
+//Dennis' Scheme of regulating bulk pressure by hand
+/*
 #ifdef Pi
 if ((M0 * M0 - M + M0 * Pi) < 0)
 Pi = M / M0 - M0;
 #endif
+*/
+
 /****************************************************************************/
 if (ePrev <= 0.1)
 {
@@ -185,6 +190,7 @@ else
 {
 	*e = energyDensityFromConservedVariables(ePrev, M0, M, Pi);
 }
+//printf("pitt = %f, pitx = %f, pity = %f, pitn = %f\n", pitt, pitx, pity, pitn);
 if (isnan(*e)) {
 	printf("\n Found e nan inside getInferredVariables \n");
 	printf("M0=%.3f,\t M1=%.3f,\t M2=%.3f,\t M3=%.3f\n", M0, M1, M2, M3);
@@ -199,12 +205,28 @@ if (isnan(*e)) {
 	}
 
 	PRECISION P = *p + Pi;
-	PRECISION E = 1/(*e + P);
+	PRECISION E = 1.0/(*e + P);
+
 	*ut = sqrtf(fabsf((M0 + P) * E));
+	//*ut = sqrtf( (M0 + P) * E );
+
 	PRECISION E2 = E/(*ut);
 	*ux = M1 * E2;
 	*uy = M2 * E2;
 	*un = M3 * E2;
+
+	//what should we do when solution for flow velocity is too large?
+	//MUSIC has revert_grid in this case...
+	if ( *ut > 1.0e10 )
+	{
+		printf("\n found ut = %f in getInferredVariables\n", *ut);
+		printf("M0 = %.9f , e = %.9f, p = %.9f, Pi = %.9f, E = %.9f\n", M0, *e, *p, Pi, E);
+		printf("***REGULATING FLOW VELOCITY FOR THIS CELL! (ut -> 1.0, ui -> 0.0)*** \n");
+		*ut = 1.0;
+		*ux = 0.0;
+		*uy = 0.0;
+		*un = 0.0;
+	}
 }
 
 void setInferredVariablesKernel(const CONSERVED_VARIABLES * const __restrict__ q,

@@ -65,10 +65,12 @@ int HYDRO::run_hydro_no_cli()
   //set properties of initialization
   HydroInitialTmunu init_tmunu;
   init_tmunu.e_in = initial_energy_density;
+
   init_tmunu.ut_in = initial_ut;
   init_tmunu.ux_in = initial_ux;
   init_tmunu.uy_in = initial_uy;
   init_tmunu.un_in = initial_un;
+
   #ifdef PIMUNU
   init_tmunu.pitt_in = initial_pitt;
   init_tmunu.pitx_in = initial_pitx;
@@ -81,6 +83,7 @@ int HYDRO::run_hydro_no_cli()
   init_tmunu.piyn_in = initial_piyn;
   init_tmunu.pinn_in = initial_pinn;
   #endif
+  
   #ifdef PI
   init_tmunu.Pi_in = initial_Pi;
   #endif
@@ -198,6 +201,6 @@ int HYDRO::run_hydro(int argc, char **argv)
   sec = omp_get_wtime() - sec;
   #endif
   printf("Hydro took %f seconds\n", sec);
-  
+
 	return 0;
 }

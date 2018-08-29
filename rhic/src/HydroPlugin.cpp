@@ -37,7 +37,7 @@
 
 #include "../include/Vorticity.h" //for polarization studies
 
-#define FREQ 10 //write output to file every FREQ timesteps
+#define FREQ 1 //write output to file every FREQ timesteps
 #define FOFREQ 10 //call freezeout surface finder every FOFREQ timesteps
 #define FOTEST 0 //if true, freezeout surface file is written with proper times rounded (down) to step size
 #define FOFORMAT 0 // 0 : write f.o. surface to ASCII file ;  1 : write to binary file
@@ -208,7 +208,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   int jctr = (ny % 2 == 0) ? ncy/2 : (ncy-1)/2;
   int kctr = (nz % 2 == 0) ? ncz/2 : (ncz-1)/2;
   int sctr = columnMajorLinearIndex(ictr, jctr, kctr, ncx, ncy, ncz);
-  
+
   std::clock_t t1,t2;
   double totalTime = 0;
   int nsteps = 0;

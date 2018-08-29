@@ -25,7 +25,6 @@
 
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
-
 //*********************************************************************************************************\
 //* Read in all initial profiles from a single or seperate file
 //*********************************************************************************************************/
@@ -1403,14 +1402,27 @@ void setICFromPreequilVectors(void * latticeParams, void * initCondParams, void 
         int sm = columnMajorLinearIndex(im, jm, km, nx, ny, nz);
         e[s] =  (PRECISION) (init_tmunu.e_in[sm] / hbarc) + (PRECISION)(1.0e-3);
         p[s] = equilibriumPressure( e[s] );
-        u->ut[s] = (PRECISION) init_tmunu.ut_in[sm];
-        u->ux[s] = (PRECISION) init_tmunu.ux_in[sm];
-        u->uy[s] = (PRECISION) init_tmunu.uy_in[sm];
-        u->un[s] = (PRECISION) init_tmunu.un_in[sm];
-        up->ut[s] = (PRECISION) init_tmunu.ut_in[sm]; //set previous step to same value
-        up->ux[s] = (PRECISION) init_tmunu.ux_in[sm]; //...
-        up->uy[s] = (PRECISION) init_tmunu.uy_in[sm];
-        up->un[s] = (PRECISION) init_tmunu.un_in[sm];
+
+        PRECISION ux, uy, un, ut;
+        if ( fabs(init_tmunu.ux_in[sm]) < 1.0e-7 ) ux = 0.0;
+        else ux = (PRECISION) init_tmunu.ux_in[sm];
+        if ( fabs(init_tmunu.uy_in[sm]) < 1.0e-7 ) uy = 0.0;
+        else uy = (PRECISION) init_tmunu.uy_in[sm];
+        if ( fabs(init_tmunu.un_in[sm]) < 1.0e-7 ) un = 0.0;
+        else un = (PRECISION) init_tmunu.un_in[sm];
+
+        ut = 1.0 + ux*ux + uy*uy + un*un;
+
+        u->ux[s] = ux;
+        u->uy[s] = uy;
+        u->un[s] = un;
+        u->ut[s] = ut;
+
+        up->ut[s] = ut; //set previous step to same value
+        up->ux[s] = ux; //...
+        up->uy[s] = uy;
+        up->un[s] = un;
+
         #ifdef PIMUNU
         q->pitt[s] = (PRECISION) (init_tmunu.pitt_in[sm] / hbarc);
         q->pitx[s] = (PRECISION) (init_tmunu.pitx_in[sm] / hbarc);
