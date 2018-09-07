@@ -436,8 +436,17 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     if (accumulator1 == 0) accumulator2 += 1;
     if (accumulator2 >= FOFREQ + 1) //only break once freezeout finder has had a chance to search/write to file
     {
-      printf("\nAll cells have dropped below freezeout energy density\n");
-      break;
+      //make sure we dont break if we are running dynamical sources
+      if (initialConditionType != 12)
+      {
+        printf("\nAll cells have dropped below freezeout energy density\n");
+        break;
+      }
+      else if ( (initialConditionType == 12) && (n > numberOfSourceFiles) )
+      {
+        printf("\nAll cells have dropped below freezeout energy density and source terms finished \n");
+        break;
+      }
     }
 
     t1 = std::clock();
