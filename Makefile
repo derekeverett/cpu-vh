@@ -11,7 +11,7 @@ FLOWTRACE =
 #Different options for different compilers and optimizations 
 #OPTIONS = -fopenmp -march=native -fopt-info-vec #-funroll-loops #-static-libstdc++ # for g++ with vector info 
 #OPTIONS = -fopenmp -march=native -std=c++11 # for g++
-OPTIONS = -qopenmp -std=c++11 # for icpc
+OPTIONS = -qopenmp -std=c++11 -lhdf5 -lhdf5_cpp # for icpc
 
 #Need to link against libconfig, googletest should be unecessary now? 
 LINK_OPTIONS = -L/home/everett.165/libconfig-1.5/lib/.libs -lconfig -L/home/everett.165/googletest-master/googletest/mybuild/ -lgtest
