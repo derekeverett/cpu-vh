@@ -756,7 +756,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
             FILE *fileIn;
             char fname[255];
             
-            sprintf(fname, "%s/%s", rootDirectory, "source/initialTmunu.dat");
+            sprintf(fname, "%s/%s", rootDirectory, "input/Tmunu.dat");
             
             fileIn = fopen(fname, "r");
             if (fileIn == NULL)
@@ -768,7 +768,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                 for(int i = 2; i < DIM_X+2; ++i) {
                     for(int j = 2; j < DIM_Y+2; ++j) {
                         for(int k = 2; k < DIM_ETA+2; ++k) {
-                            fscanf(fileIn, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &ttt_in, &ttx_in, &tty_in, &ttn_in, &txx_in, &txy_in, &txn_in, &tyy_in, &tyn_in, &tnn_in);
+                            fscanf(fileIn, "%*s%*s%*s%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &ttt_in, &ttx_in, &tty_in, &ttn_in, &txx_in, &txy_in, &txn_in, &tyy_in, &tyn_in, &tnn_in);
                             int is = columnMajorLinearIndex(i, j, k, DIM_X+4, DIM_Y+4, DIM_ETA+4);
                             stressTensor[0][is] = ttt_in;
                             stressTensor[1][is] = ttx_in;
