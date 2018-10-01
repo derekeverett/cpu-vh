@@ -24,6 +24,7 @@ double fractionOfBinaryCollisions;
 // longitudinal energy density profile parameters
 double rapidityVariance; // \sigma^{2}_{\eta}
 double rapidityMean; // flat region around \ets_s = 0
+int sourceType;
 
 //uses libconfig
 /*
@@ -124,6 +125,12 @@ void readInitialConditionParameters(const char* configDirectory, void * params) 
 		delimiterPos = line.find("=");
 		line = line.substr(delimiterPos + 1);
 		rapidityMean = atof(line.c_str());
+        
+        getline(cFile, line);
+        line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
+        delimiterPos = line.find("=");
+        line = line.substr(delimiterPos + 1);
+        sourceType = atof(line.c_str());
 	}
 	else std::cerr << "No configuration file  %s found for initial condition parameters\n";
 
@@ -137,5 +144,6 @@ void readInitialConditionParameters(const char* configDirectory, void * params) 
 	initCond->fractionOfBinaryCollisions = fractionOfBinaryCollisions;
 	initCond->rapidityVariance = rapidityVariance;
 	initCond->rapidityMean = rapidityMean;
+    initCond->sourceType = sourceType;
 
 }
