@@ -13,7 +13,7 @@
 #define PIMUNU
 //#define PI
 
-#define THERMAL_VORTICITY
+//#define THERMAL_VORTICITY
 
 /*********************************************************/
 #ifndef PI
