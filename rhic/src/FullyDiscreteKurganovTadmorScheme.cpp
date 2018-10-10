@@ -692,13 +692,10 @@ regulateDissipativeCurrents(PRECISION t,
 	const CONSERVED_VARIABLES * const __restrict__ currentVars,
 	const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 	const FLUID_VELOCITY * const __restrict__ u,
-	int ncx, int ncy, int ncz
+	int ncx, int ncy, int ncz, PRECISION T_reg
 ) {
 
 	//only cells with Temperature < T_reg have dissipative currents regulated
-	PRECISION hbarc = 0.197326938;
-	PRECISION T_reg = 0.155; //GeV
-	T_reg /= hbarc; //critical temperature for regulation in fm^-1
 	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
 
 	#pragma omp parallel for collapse(3)
@@ -834,8 +831,8 @@ regulateDissipativeCurrents(PRECISION t,
 				facBulk = exp(arg);
 				#endif
 
-				//ensure that regulation only happens far outside the FO surface!
-				//if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
+				//ensure that regulation only happens for cells with temperature less than chosen regulation temperature 
+				if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
 
 				#ifdef PIMUNU
 				currentVars->pitt[s] *= facShear;
@@ -885,6 +882,9 @@ void * latticeParams, void * hydroParams
 	PRECISION dz = (PRECISION)(lattice->latticeSpacingRapidity);
 
 	PRECISION etabar = (PRECISION)(hydro->shearViscosityToEntropyDensity);
+	PRECISION regulationTemperatureGeV = (PRECISION)(hydro->regulationTemperatureGeV);
+	PRECISION hbarc = 0.197326938;
+	PRECISION T_reg = regulationTemperatureGeV / hbarc;
 
 	//===================================================
 	// STEP 1:
@@ -899,7 +899,7 @@ void * latticeParams, void * hydroParams
 
 	setInferredVariablesKernel(qS, e, p, uS, t, latticeParams);
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
-	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz);
+	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz, T_reg);
 	#endif
 	setGhostCells(qS, e, p, uS, latticeParams);
 
@@ -916,7 +916,7 @@ void * latticeParams, void * hydroParams
 	swapFluidVelocity(&up, &u);
 	setInferredVariablesKernel(Q, e, p, u, t, latticeParams);
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
-	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz);
+	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz, T_reg);
 	#endif
 	setGhostCells(Q, e, p, u, latticeParams);
 }

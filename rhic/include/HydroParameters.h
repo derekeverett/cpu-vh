@@ -18,6 +18,7 @@ struct HydroParameters
 	double shearViscosityToEntropyDensity;
 	double freezeoutTemperatureGeV;
 	int initializePimunuNavierStokes;
+	double regulationTemperatureGeV;
 };
 
 //requires libconfig
