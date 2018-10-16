@@ -74,34 +74,22 @@ void swapAndSetHydroVariables(double ****energy_density_evoution, double *****hy
         hydrodynamic_evoution[7][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[7][FOFREQ][ix-2][iy-2][iz-2];
         hydrodynamic_evoution[8][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[8][FOFREQ][ix-2][iy-2][iz-2];
         hydrodynamic_evoution[9][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[9][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[10][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[10][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[11][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[11][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[12][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[12][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[13][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[13][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[14][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[14][FOFREQ][ix-2][iy-2][iz-2];
-        hydrodynamic_evoution[15][0][ix-2][iy-2][iz-2] = hydrodynamic_evoution[15][FOFREQ][ix-2][iy-2][iz-2];
 
         //current hydro variable values written to first index
         energy_density_evoution[1][ix-2][iy-2][iz-2] = (double)e[s];
-        hydrodynamic_evoution[0][1][ix-2][iy-2][iz-2] = (double)(u->ut[s]);
-        hydrodynamic_evoution[1][1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
-        hydrodynamic_evoution[2][1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
-        hydrodynamic_evoution[3][1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
-        hydrodynamic_evoution[4][1][ix-2][iy-2][iz-2] = (double)(e[s]);
+        hydrodynamic_evoution[0][1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
+        hydrodynamic_evoution[1][1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
+        hydrodynamic_evoution[2][1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
+        hydrodynamic_evoution[3][1][ix-2][iy-2][iz-2] = (double)(e[s]);
 	#ifdef PIMUNU
-        hydrodynamic_evoution[5][1][ix-2][iy-2][iz-2] = (double)(q->pitt[s]);
-        hydrodynamic_evoution[6][1][ix-2][iy-2][iz-2] = (double)(q->pitx[s]);
-        hydrodynamic_evoution[7][1][ix-2][iy-2][iz-2] = (double)(q->pity[s]);
-        hydrodynamic_evoution[8][1][ix-2][iy-2][iz-2] = (double)(q->pitn[s]);
-        hydrodynamic_evoution[9][1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
-        hydrodynamic_evoution[10][1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
-        hydrodynamic_evoution[11][1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
-        hydrodynamic_evoution[12][1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
-        hydrodynamic_evoution[13][1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
-        hydrodynamic_evoution[14][1][ix-2][iy-2][iz-2] = (double)(q->pinn[s]);
+        hydrodynamic_evoution[4][1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
+        hydrodynamic_evoution[5][1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
+        hydrodynamic_evoution[6][1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
+        hydrodynamic_evoution[7][1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
+        hydrodynamic_evoution[8][1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
 	#endif
 	#ifdef PI
-        hydrodynamic_evoution[15][1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
+        hydrodynamic_evoution[9][1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
 	#endif
       }
     } //for (int iy = 2; iy < ny+2; iy++)
@@ -125,25 +113,19 @@ void setHydroVariables(double ****energy_density_evoution, double *****hydrodyna
       {
         int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4, nz+4);
         energy_density_evoution[nFO+1][ix-2][iy-2][iz-2] = (double)e[s];
-        hydrodynamic_evoution[0][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ut[s]);
-        hydrodynamic_evoution[1][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
-        hydrodynamic_evoution[2][nFO+1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
-        hydrodynamic_evoution[3][nFO+1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
-        hydrodynamic_evoution[4][nFO+1][ix-2][iy-2][iz-2] = (double)(e[s]);
+        hydrodynamic_evoution[0][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
+        hydrodynamic_evoution[1][nFO+1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
+        hydrodynamic_evoution[2][nFO+1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
+        hydrodynamic_evoution[3][nFO+1][ix-2][iy-2][iz-2] = (double)(e[s]);
 	#ifdef PIMUNU
-        hydrodynamic_evoution[5][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitt[s]);
-        hydrodynamic_evoution[6][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitx[s]);
-        hydrodynamic_evoution[7][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pity[s]);
-        hydrodynamic_evoution[8][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitn[s]);
-        hydrodynamic_evoution[9][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
-        hydrodynamic_evoution[10][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
-        hydrodynamic_evoution[11][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
-        hydrodynamic_evoution[12][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
-        hydrodynamic_evoution[13][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
-        hydrodynamic_evoution[14][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pinn[s]);
+        hydrodynamic_evoution[4][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
+        hydrodynamic_evoution[5][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
+        hydrodynamic_evoution[6][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
+        hydrodynamic_evoution[7][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
+        hydrodynamic_evoution[8][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
 	#endif
 	#ifdef PI
-        hydrodynamic_evoution[15][nFO+1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
+        hydrodynamic_evoution[9][nFO+1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
 	#endif
       }
     } //for (int iy = 2; iy < ny+2; iy++)
@@ -188,33 +170,27 @@ void swapAndSetHydroVariables_Vorticity(double ****energy_density_evoution, doub
 
         //current hydro variable values written to first index
         energy_density_evoution[1][ix-2][iy-2][iz-2] = (double)e[s];
-        hydrodynamic_evoution[0][1][ix-2][iy-2][iz-2] = (double)(u->ut[s]);
-        hydrodynamic_evoution[1][1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
-        hydrodynamic_evoution[2][1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
-        hydrodynamic_evoution[3][1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
-        hydrodynamic_evoution[4][1][ix-2][iy-2][iz-2] = (double)(e[s]);
+        hydrodynamic_evoution[0][1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
+        hydrodynamic_evoution[1][1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
+        hydrodynamic_evoution[2][1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
+        hydrodynamic_evoution[3][1][ix-2][iy-2][iz-2] = (double)(e[s]);
 	#ifdef PIMUNU
-        hydrodynamic_evoution[5][1][ix-2][iy-2][iz-2] = (double)(q->pitt[s]);
-        hydrodynamic_evoution[6][1][ix-2][iy-2][iz-2] = (double)(q->pitx[s]);
-        hydrodynamic_evoution[7][1][ix-2][iy-2][iz-2] = (double)(q->pity[s]);
-        hydrodynamic_evoution[8][1][ix-2][iy-2][iz-2] = (double)(q->pitn[s]);
-        hydrodynamic_evoution[9][1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
-        hydrodynamic_evoution[10][1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
-        hydrodynamic_evoution[11][1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
-        hydrodynamic_evoution[12][1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
-        hydrodynamic_evoution[13][1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
-        hydrodynamic_evoution[14][1][ix-2][iy-2][iz-2] = (double)(q->pinn[s]);
+        hydrodynamic_evoution[4][1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
+        hydrodynamic_evoution[5][1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
+        hydrodynamic_evoution[6][1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
+        hydrodynamic_evoution[7][1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
+        hydrodynamic_evoution[8][1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
 	#endif
 	#ifdef PI
-        hydrodynamic_evoution[15][1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
+        hydrodynamic_evoution[9][1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
 	#endif
   #ifdef THERMAL_VORTICITY
-        hydrodynamic_evoution[16][1][ix-2][iy-2][iz-2] = (double)(wmunu->wtx[s]);
-        hydrodynamic_evoution[17][1][ix-2][iy-2][iz-2] = (double)(wmunu->wty[s]);
-        hydrodynamic_evoution[18][1][ix-2][iy-2][iz-2] = (double)(wmunu->wtn[s]);
-        hydrodynamic_evoution[19][1][ix-2][iy-2][iz-2] = (double)(wmunu->wxy[s]);
-        hydrodynamic_evoution[20][1][ix-2][iy-2][iz-2] = (double)(wmunu->wxn[s]);
-        hydrodynamic_evoution[21][1][ix-2][iy-2][iz-2] = (double)(wmunu->wyn[s]);
+        hydrodynamic_evoution[10][1][ix-2][iy-2][iz-2] = (double)(wmunu->wtx[s]);
+        hydrodynamic_evoution[11][1][ix-2][iy-2][iz-2] = (double)(wmunu->wty[s]);
+        hydrodynamic_evoution[12][1][ix-2][iy-2][iz-2] = (double)(wmunu->wtn[s]);
+        hydrodynamic_evoution[13][1][ix-2][iy-2][iz-2] = (double)(wmunu->wxy[s]);
+        hydrodynamic_evoution[14][1][ix-2][iy-2][iz-2] = (double)(wmunu->wxn[s]);
+        hydrodynamic_evoution[15][1][ix-2][iy-2][iz-2] = (double)(wmunu->wyn[s]);
   #endif
       }
     } //for (int iy = 2; iy < ny+2; iy++)
@@ -239,33 +215,27 @@ void setHydroVariables_Vorticity(double ****energy_density_evoution, double ****
       {
         int s = columnMajorLinearIndex(ix, iy, iz, nx+4, ny+4, nz+4);
         energy_density_evoution[nFO+1][ix-2][iy-2][iz-2] = (double)e[s];
-        hydrodynamic_evoution[0][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ut[s]);
-        hydrodynamic_evoution[1][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
-        hydrodynamic_evoution[2][nFO+1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
-        hydrodynamic_evoution[3][nFO+1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
-        hydrodynamic_evoution[4][nFO+1][ix-2][iy-2][iz-2] = (double)(e[s]);
+        hydrodynamic_evoution[0][nFO+1][ix-2][iy-2][iz-2] = (double)(u->ux[s]);
+        hydrodynamic_evoution[1][nFO+1][ix-2][iy-2][iz-2] = (double)(u->uy[s]);
+        hydrodynamic_evoution[2][nFO+1][ix-2][iy-2][iz-2] = (double)(u->un[s]);
+        hydrodynamic_evoution[3][nFO+1][ix-2][iy-2][iz-2] = (double)(e[s]);
 	#ifdef PIMUNU
-        hydrodynamic_evoution[5][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitt[s]);
-        hydrodynamic_evoution[6][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitx[s]);
-        hydrodynamic_evoution[7][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pity[s]);
-        hydrodynamic_evoution[8][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pitn[s]);
-        hydrodynamic_evoution[9][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
-        hydrodynamic_evoution[10][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
-        hydrodynamic_evoution[11][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
-        hydrodynamic_evoution[12][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
-        hydrodynamic_evoution[13][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
-        hydrodynamic_evoution[14][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pinn[s]);
+        hydrodynamic_evoution[4][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixx[s]);
+        hydrodynamic_evoution[5][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixy[s]);
+        hydrodynamic_evoution[6][nFO+1][ix-2][iy-2][iz-2] = (double)(q->pixn[s]);
+        hydrodynamic_evoution[7][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyy[s]);
+        hydrodynamic_evoution[8][nFO+1][ix-2][iy-2][iz-2] = (double)(q->piyn[s]);
 	#endif
 	#ifdef PI
-        hydrodynamic_evoution[15][nFO+1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
+        hydrodynamic_evoution[9][nFO+1][ix-2][iy-2][iz-2] = (double)(q->Pi[s]);
 	#endif
   #ifdef THERMAL_VORTICITY
-        hydrodynamic_evoution[16][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wtx[s]);
-        hydrodynamic_evoution[17][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wty[s]);
-        hydrodynamic_evoution[18][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wtn[s]);
-        hydrodynamic_evoution[19][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wxy[s]);
-        hydrodynamic_evoution[20][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wxn[s]);
-        hydrodynamic_evoution[21][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wyn[s]);
+        hydrodynamic_evoution[10][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wtx[s]);
+        hydrodynamic_evoution[11][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wty[s]);
+        hydrodynamic_evoution[12][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wtn[s]);
+        hydrodynamic_evoution[13][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wxy[s]);
+        hydrodynamic_evoution[14][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wxn[s]);
+        hydrodynamic_evoution[15][nFO+1][ix-2][iy-2][iz-2] = (double)(wmunu->wyn[s]);
   #endif
       }
     } //for (int iy = 2; iy < ny+2; iy++)

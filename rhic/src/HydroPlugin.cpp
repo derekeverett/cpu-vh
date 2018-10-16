@@ -161,9 +161,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   //make an array to store all the hydrodynamic variables for FOFREQ time steps
   //to be written to file once the freezeout surface is determined by the critical energy density
   #ifdef THERMAL_VORTICITY
-  int n_hydro_vars = 22; //u0, u1, u2, u3, e, pi00, pi01, pi02, pi03, pi11, pi12, pi13, pi22, pi23, pi33, Pi, wtx, wty, wtn, wxy, wxn, wyn (the temperature and pressure are calclated with EoS)
+  int n_hydro_vars = 16; //u1, u2, u3, e, pi11, pi12, pi13, pi22, pi23, Pi, wtx, wty, wtn, wxy, wxn, wyn (the temperature and pressure are calclated with EoS)
   #else
-  int n_hydro_vars = 16; //u0, u1, u2, u3, e, pi00, pi01, pi02, pi03, pi11, pi12, pi13, pi22, pi23, pi33, Pi, the temperature and pressure are calclated with EoS
+  int n_hydro_vars = 10; //u1, u2, u3, e, pi11, pi12, pi13, pi22, pi23, Pi (the temperature and pressure are calclated with EoS)
   #endif
 
   //rather than declaring a multidimensional array, declare a vector of FO_elements to which we save the hydro info?
@@ -319,7 +319,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                     freezeoutSurfaceFile << cell_z << " ";
                     fo_cell.eta = cell_z;
                   }
-                  //then the (covariant?) surface normal element; check jacobian factors of tau for milne coordinates!
                   //acording to cornelius user guide, corenelius returns covariant components of normal vector without jacobian factors
                   freezeoutSurfaceFile << t * cor.get_normal_elem(i,0) << " ";
                   fo_cell.dat = t * cor.get_normal_elem(i,0);
@@ -337,36 +336,35 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                     freezeoutSurfaceFile << 0.0 << " ";
                     fo_cell.dan = 0.0;
                   }
-                  //write all the necessary hydro dynamic variables by first performing linear interpolation from values at
-                  //corners of hypercube
+                  //write all necessary variables first performing linear interpolation from values at corners of hypercube
 
                   if (dim == 4) // for 3+1D
                   {
                     //first write the contravariant flow velocity
-                    for (int ivar = 0; ivar < dim; ivar++)
+                    for (int ivar = 0; ivar < 3; ivar++)
                     {
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
                     //write the energy density
-                    temp = interpolateVariable4D(hydrodynamic_evoution, 4, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
+                    temp = interpolateVariable4D(hydrodynamic_evoution, 3, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                     freezeoutSurfaceFile << temp << " "; //note : iSpectra reads in file in fm^x units e.g. energy density should be written in fm^-4
-                    //the temperature !this needs to be checked
+                    //the temperature
                     freezeoutSurfaceFile << effectiveTemperature(temp) << " ";
                     //the thermal pressure
                     freezeoutSurfaceFile << equilibriumPressure(temp) << " ";
-                    //write ten components of pi_(mu,nu) shear viscous tensor
-                    for (int ivar = 5; ivar < 15; ivar++)
+                    //write five indep components of pi_(mu,nu) shear viscous tensor
+                    for (int ivar = 4; ivar < 9; ivar++)
                     {
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
                     //write the bulk pressure Pi
-                    temp = interpolateVariable4D(hydrodynamic_evoution, 15, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
+                    temp = interpolateVariable4D(hydrodynamic_evoution, 9, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                     freezeoutSurfaceFile << temp;
                     //write 6 components of w^\mu\nu thermal vorticity tensor
                     #ifdef THERMAL_VORTICITY
-                    for (int ivar = 16; ivar < 22; ivar++)
+                    for (int ivar = 10; ivar < 16; ivar++)
                     {
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                       freezeoutSurfaceFile << temp << " ";
@@ -378,29 +376,29 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                   else //for 2+1D
                   {
                     //first write the flow velocity
-                    for (int ivar = 0; ivar < 4; ivar++)
+                    for (int ivar = 0; ivar < 3; ivar++)
                     {
                       temp = interpolateVariable3D(hydrodynamic_evoution, ivar, it, ix, iy, tau_frac, x_frac, y_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
                     //write the energy density
-                    temp = interpolateVariable3D(hydrodynamic_evoution, 4, it, ix, iy, tau_frac, x_frac, y_frac);
+                    temp = interpolateVariable3D(hydrodynamic_evoution, 3, it, ix, iy, tau_frac, x_frac, y_frac);
                     freezeoutSurfaceFile << temp << " "; //note units of fm^-4 appropriate for iSpectra reading
-                    //the temperature !this needs to be checked
+                    //the temperature
                     freezeoutSurfaceFile << effectiveTemperature(temp) << " ";
                     //the thermal pressure
                     freezeoutSurfaceFile << equilibriumPressure(temp) << " ";
-                    //write ten components of pi_(mu,nu) shear viscous tensor
-                    for (int ivar = 5; ivar < 15; ivar++)
+                    //write five indep components of pi_(mu,nu) shear viscous tensor
+                    for (int ivar = 4; ivar < 9; ivar++)
                     {
                       temp = interpolateVariable3D(hydrodynamic_evoution, ivar, it, ix, iy, tau_frac, x_frac, y_frac);
                       freezeoutSurfaceFile << temp << " ";
                     }
                     //write the bulk pressure Pi
-                    temp = interpolateVariable3D(hydrodynamic_evoution, 15, it, ix, iy, tau_frac, x_frac, y_frac);
+                    temp = interpolateVariable3D(hydrodynamic_evoution, 9, it, ix, iy, tau_frac, x_frac, y_frac);
                     freezeoutSurfaceFile << temp;
                     #ifdef THERMAL_VORTICITY
-                    for (int ivar = 16; ivar < 22; ivar++)
+                    for (int ivar = 10; ivar < 16; ivar++)
                     {
                       temp = interpolateVariable4D(hydrodynamic_evoution, ivar, it, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
                       freezeoutSurfaceFile << temp << " ";
@@ -411,7 +409,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
                 } // if (FOFORMAT == 0)
 
                 //add the fo cell to fo surface
-                fo_surf.push_back(fo_cell);
+                //fo_surf.push_back(fo_cell);
 
               } //for (int i = 0; i < cor.get_Nelements(); i++)
             } // for (int iz = 0; iz < dimZ; iz++)
