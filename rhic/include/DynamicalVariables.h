@@ -11,7 +11,7 @@
 #define NUMBER_CONSERVATION_LAWS 4
 
 #define PIMUNU
-//#define PI
+#define PI
 
 //#define THERMAL_VORTICITY
 

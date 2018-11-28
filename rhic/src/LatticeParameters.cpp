@@ -18,6 +18,7 @@ int numLatticePointsX;
 int numLatticePointsY;
 int numLatticePointsRapidity;
 int numProperTimePoints;
+int coarseProperTimeFOFactor;
 
 double latticeSpacingX;
 double latticeSpacingY;
@@ -120,6 +121,12 @@ void readLatticeParameters(const char* configDirectory, void * params) {
 		line = line.substr(delimiterPos + 1);
 		latticeSpacingProperTime = atof(line.c_str());
 
+		getline(cFile, line);
+		line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
+		delimiterPos = line.find("=");
+		line = line.substr(delimiterPos + 1);
+		coarseProperTimeFOFactor = atoi(line.c_str());
+
 	}
 	else std::cerr << "No configuration file found for lattice parameters\n";
 
@@ -135,4 +142,5 @@ void readLatticeParameters(const char* configDirectory, void * params) {
 	lattice->latticeSpacingY = latticeSpacingY;
 	lattice->latticeSpacingRapidity = latticeSpacingRapidity;
 	lattice->latticeSpacingProperTime = latticeSpacingProperTime;
+	lattice->coarseProperTimeFOFactor = coarseProperTimeFOFactor; 
 }

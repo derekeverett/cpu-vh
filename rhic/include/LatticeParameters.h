@@ -23,6 +23,7 @@ struct LatticeParameters
 	int numComputationalLatticePointsY;
 	int numComputationalLatticePointsRapidity;
 	int numProperTimePoints;
+	int coarseProperTimeFOFactor;
 
 	double latticeSpacingX;
 	double latticeSpacingY;

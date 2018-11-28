@@ -22,7 +22,7 @@ struct InitialConditionParameters
 	// longitudinal energy density profile parameters
 	double rapidityVariance; // \sigma^{2}_{\eta}
 	double rapidityMean; // flat region around \ets_s = 0
-    int sourceType;
+  int sourceType;
 };
 
 //this function uses libconfig
