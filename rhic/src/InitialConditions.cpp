@@ -25,7 +25,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
-#define REGULATE 0 // 1 to regulate flow in dilute regions
+
 #define GAMMA_MAX 10.0
 
 #ifdef _OPENMP
@@ -113,6 +113,8 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     int ny = lattice->numLatticePointsY;
     int nz = lattice->numLatticePointsRapidity;
 
+    PRECISION t0 = hydro->initialProperTimePoint;
+
     float x, y, z, value;
     FILE *fileIn;
     char fname[255];
@@ -135,51 +137,6 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
                     p[s] = equilibriumPressure( e[s] );
                     //ep[s] = (PRECISION) value;
                     //printf("e [ %d ] = %f\n", s, e[s]);
-                }
-            }
-        }
-    }
-    fclose(fileIn);
-
-    //pressure
-    /*
-    sprintf(fname, "%s/%s", rootDirectory, "/input/p.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
-    {
-        printf("Couldn't open p.dat!\n");
-    }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    p[s] =  (PRECISION) value;
-                }
-            }
-        }
-    }
-    fclose(fileIn);
-    */
-
-    //ut
-    sprintf(fname, "%s/%s", rootDirectory, "/input/ut.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
-    {
-        printf("Couldn't open ut.dat!\n");
-    }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    u->ut[s] =  (PRECISION) value;
-                    up->ut[s] = (PRECISION) value;
                 }
             }
         }
@@ -252,7 +209,23 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     }
     fclose(fileIn);
 
+    //ut set using normalization
+    for(int i = 2; i < nx+2; ++i) {
+        for(int j = 2; j < ny+2; ++j) {
+            for(int k = 2; k < nz+2; ++k) {
+                int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+                PRECISION ux = u->ux[s];
+                PRECISION uy = u->uy[s];
+                PRECISION un = u->un[s];
+                PRECISION ut = 1.0 + ux * ux + uy * uy + t0 * t0 * un * un;
+            }
+        }
+    }
+
 #ifdef PIMUNU
+    // should set only 5 components of pimunu and fix rest using tracelessness/orthog
+    // TO BE FIXED
+
     //pitt
     sprintf(fname, "%s/%s", rootDirectory, "/input/pitt.dat");
     fileIn = fopen(fname, "r");
@@ -507,23 +480,20 @@ void setFluidVelocityInitialCondition(void * latticeParams, void * hydroParams) 
 		for(int j = 2; j < ny+2; ++j) {
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-				PRECISION ux = 0.;
-				PRECISION uy = 0.;
-				PRECISION un = 0.;
 				u->ux[s] = 0.;
 				u->uy[s] = 0.;
 				u->un[s] = 0.;
-				u->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
+				u->ut[s] = 1.0;
 
         up->ux[s] = 0.;
 				up->uy[s] = 0.;
 				up->un[s] = 0.;
-				up->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
+				up->ut[s] = 1.0;
 
         uS->ux[s] = 0.;
 				uS->uy[s] = 0.;
 				uS->un[s] = 0.;
-				uS->ut[s] = sqrt(1.0+ux*ux+uy*uy+t0*t0*un*un);
+				uS->ut[s] = 1.0;
 			}
 		}
 	}
@@ -655,7 +625,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
     struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
 
     int sourceType = initCond->sourceType;
-    
+
     double initialEnergyDensity = initCond->initialEnergyDensity;
 
     int ncx = lattice->numComputationalLatticePointsX;
@@ -670,12 +640,12 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
     double dy = lattice->latticeSpacingY;
     double dz = lattice->latticeSpacingRapidity;
     double t0 = hydro->initialProperTimePoint;
-    
+
     int DIM_X = lattice->numLatticePointsX;
     int DIM_Y = lattice->numLatticePointsY;
     int DIM_ETA = lattice->numLatticePointsRapidity;
     int DIM = ncx*ncy*ncz;
-    
+
     double DX = lattice->latticeSpacingX;
     double DY = lattice->latticeSpacingY;
     double DETA = lattice->latticeSpacingRapidity;
@@ -684,43 +654,39 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
     //==================================================
     // Initialize to vacuum
     //==================================================
-    
+
     switch(sourceType){
         case 0: {
             printf("initialized to be vaccum \n");
-            
+
             double ed = initialEnergyDensity;
             double pd = equilibriumPressure(ed);
-            
+
             //--------------------------------------------------
             // Initialize energy, baryon and pressure density, also
             // shear, bulk, flow velocity and baryon diffusion current
             //--------------------------------------------------
-            
+
             printf("Initialize \\pi^\\mu\\nu to zero.\n");
             printf("Initialize \\nb^\\mu to zero.\n");
-            
+
             for(int i = 2; i < nx+2; ++i) {
                 for(int j = 2; j < ny+2; ++j) {
                     for(int k = 2; k < nz+2; ++k) {
                         int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                        
+
                         e[s] = (PRECISION) ed;
                         p[s] = pd;
-                        
-                        PRECISION ux = 0;
-                        PRECISION uy = 0;
-                        PRECISION un = 0;
-                        
-                        u->ux[s] = 0;
-                        u->uy[s] = 0;
-                        u->un[s] = 0;
-                        u->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
-                        
-                        up->ux[s] = 0;
-                        up->uy[s] = 0;
-                        up->un[s] = 0;
-                        up->ut[s] = sqrt(1+ux*ux+uy*uy+t0*t0*un*un);
+
+                        u->ux[s] = 0.0;
+                        u->uy[s] = 0.0;
+                        u->un[s] = 0.0;
+                        u->ut[s] = 1.0;
+
+                        up->ux[s] = 0.0;
+                        up->uy[s] = 0.0;
+                        up->un[s] = 0.0;
+                        up->ut[s] = 1.0;
 #ifdef PIMUNU
                         q->pitt[s] = 0;
                         q->pitx[s] = 0;
@@ -741,23 +707,23 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
             }
             return;
         }
-            
+
         case 1: {
-            
+
             printf("initialized with distributions in the Landau frame \n");
-            
+
             //--------------------------------------------------
             // Solve eigenvalue problem in the Landau Frame
             //--------------------------------------------------
-            
+
             double ttt_in, ttx_in, tty_in, ttn_in, txx_in, txy_in, txn_in, tyy_in, tyn_in, tnn_in;
             double stressTensor[10][DIM];
-            
+
             FILE *fileIn;
             char fname[255];
-            
+
             sprintf(fname, "%s/%s", rootDirectory, "input/Tmunu.dat");
-            
+
             fileIn = fopen(fname, "r");
             if (fileIn == NULL)
             {
@@ -784,9 +750,9 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                     }
                 }
             }
-            
+
             float tolerance = 1.0e-3; //set energy density to tolerance if it is less than tolerance and if REGULATE is true
-            
+
             for (int is = 0; is < DIM; is++)
             {
                 gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
@@ -815,7 +781,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                 gsl_matrix_set(Tmunu, 2, 1, stressTensor[5][is]); //y,x
                 gsl_matrix_set(Tmunu, 3, 1, stressTensor[6][is]); //eta,x
                 gsl_matrix_set(Tmunu, 3, 2, stressTensor[8][is]); //eta,y
-                
+
                 //set the values of the "metric"; not really the metric, but the numerical constants
                 //which are multiplied by the elements of T^(mu,nu) to get the values of T^(mu)_(nu)
                 //note factors of TAU appropriate for milne coordinates g_(mu.nu) = diag(1,-1,-1,-TAU^2)
@@ -841,27 +807,27 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                 eigen_workspace = gsl_eigen_nonsymmv_alloc(4);
                 gsl_eigen_nonsymmv(Tmunu, eigen_values, eigen_vectors, eigen_workspace);
                 gsl_eigen_nonsymmv_free(eigen_workspace);
-                
+
                 //***does this have a solution for energy density and flow at every point?
                 int eigenvalue_exists = 0;
                 for (int i = 0; i < 4; i++)
                 {
                     gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
-                    
+
                     if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
                     {
                         gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
                         gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);
                         gsl_complex v2 = gsl_matrix_complex_get(eigen_vectors, 2 , i);
                         gsl_complex v3 = gsl_matrix_complex_get(eigen_vectors, 3 , i);
-                        
+
                         if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
                         {
                             double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + TAU*TAU*GSL_REAL(v3)*GSL_REAL(v3));
                             double factor = 1.0 / sqrt(minkowskiLength);
-                            
+
                             if (GSL_REAL(v0) < 0) factor=-factor;
-                            
+
                             //ignore eigenvectors with gamma >~ 60
                             if ( (GSL_REAL(v0) * factor) < GAMMA_MAX)
                             {
@@ -872,11 +838,11 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                                 u->uy[is] = GSL_REAL(v2) * factor;
                                 u->un[is] = GSL_REAL(v3) * factor;
                             }
-                            
+
                         } // if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
                     } // if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
                 } //for (int i = 0; i < 4; ...)
-                
+
                 if (eigenvalue_exists == 0)
                 {
                     //in dilute regions where we can't find a timelike eigenvector, set e = 0, u^t = 1, u^x=u^y=u^n=0
@@ -887,55 +853,22 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                     u->un[is] = 0.0;
                 }
             } // for (int is; is < DIM; ...)
-            
-            
+
+
             //--------------------------------------------------
             // Initialize flow velocity, energy, pressure and baryon densities
             //--------------------------------------------------
-            
-            //now regulate the flow velocity by a smoothing procedure. Flow can be too large in dilute regions, cause hydro to crash...
-            //this method doesnt yield a smooth profile
-            
-            //try scaling the flow velocity by a smooth profile which goes to zero after some finite radius
-            if (REGULATE)
-            {
-                printf("Regulating flow velocity profile in dilute regions \n");
-                for(int i = 2; i < DIM_X+2; ++i) {
-                    double x = (i-2 - (DIM_X-1)/2.)*DX;
-                    for(int j = 2; j < DIM_Y+2; ++j) {
-                        double y = (j-2 - (DIM_Y-1)/2.)*DY;
-                        for(int k = 2; k < DIM_ETA+2; ++k) {
-                            
-                            int is = columnMajorLinearIndex(i, j, k, DIM_X+4, DIM_Y+4, DIM_ETA+4);
-                            
-                            double r = sqrt(x*x + y*y);
-                            //printf("r=%f\n",r);
-                            
-                            float R_WIDTH = 0.6;
-                            float R_FLAT = 4.5;
-                            float arg = (-1.0) * (r - R_FLAT) * (r - R_FLAT) / (2.0 * R_WIDTH * R_WIDTH);
-                            arg = arg * THETA_FUNCTION(r - R_FLAT);
-                            
-                            u->ux[is] = u->ux[is] * exp(arg);
-                            u->uy[is] = u->uy[is] * exp(arg);
-                            u->un[is] = 0.0;
-                            
-                            u->ut[is] = sqrt( 1 + u->ux[is]*u->ux[is] + u->uy[is]*u->uy[is] + TAU*TAU*u->un[is]*u->un[is]);
-                        }
-                    }
-                }
-            }
-            
+
             for(int i = 2; i < DIM_X+2; ++i) {
                 for(int j = 2; j < DIM_Y+2; ++j) {
                     for(int k = 2; k < DIM_ETA+2; ++k) {
                         int is = columnMajorLinearIndex(i, j, k, DIM_X+4, DIM_Y+4, DIM_ETA+4);
-                        
+
                         u->ux[is] = 0.0;
                         u->uy[is] = 0.0;
                         u->un[is] = 0.0;
                         u->ut[is] = sqrt( 1 + u->ux[is]*u->ux[is] + u->uy[is]*u->uy[is] + TAU*TAU*u->un[is]*u->un[is]);
-                        
+
                         e[is] = e[is] + 1.e-3;
                         up->ut[is] = u->ut[is];
                         up->ux[is] = u->ux[is];
@@ -946,13 +879,13 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                 }
             }
             fclose(fileIn);
-            
+
             //--------------------------------------------------
             // Initialize shear, bulk
             //--------------------------------------------------
-            
+
             printf("Initialize \\pi^\\mu\\nu to zero.\n");
-            
+
             int nx = lattice->numLatticePointsX;
             int ny = lattice->numLatticePointsY;
             int nz = lattice->numLatticePointsRapidity;
@@ -1113,9 +1046,6 @@ void setGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 	double dz = lattice->latticeSpacingRapidity;
 
 	double e0 = initCond->initialEnergyDensity;
-	double T0 = 2.05;
-//	e0 *= pow(T0,4);
-	e0 = (double) equilibriumEnergyDensity(T0);
 
 	double eT[nx*ny], eL[nz];
 	energyDensityTransverseProfileAA(eT, nx, ny, dx, dy, initCondParams);
@@ -1152,10 +1082,6 @@ void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 	double dz = lattice->latticeSpacingRapidity;
 
 	double e0 = initCond->initialEnergyDensity;
-//	double T0 = 3.05;
-	double T0 = 2.03;
-//	e0 *= pow(T0,4);
-	e0 = (double) equilibriumEnergyDensity(T0);
 
 	double eT[nx*ny], eL[nz];
 	monteCarloGlauberEnergyDensityTransverseProfile(eT, nx, ny, dx, dy, initCondParams);
@@ -1201,17 +1127,24 @@ void setIdealGubserInitialCondition(void * latticeParams, void * initCondParams)
 
 			double T = 1.9048812623618392/pow(1 + pow(1 - pow(x,2) - pow(y,2),2) + 2*(1 + pow(x,2) + pow(y,2)),0.3333333333333333);
 			double r = sqrt(x*x+y*y);
-			double phi = atanh(2*1*r/(1+1+x*x+y*y));
+			double phi = atanh(2.0 * r / (1.0 + 1.0 + x * x + y * y));
 
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				e[s] = (PRECISION) (e0 * pow(T,4));
-				p[s] = e[s]/3;
+				p[s] = e[s]/3.0;
+
 				u->ux[s] = (PRECISION) (sinh(phi)*x/r);
 				u->uy[s] = (PRECISION) (sinh(phi)*y/r);
-				u->un[s] = 0;
+				u->un[s] = 0.0;
 				u->ut[s] = sqrt(1 + u->ux[s]*u->ux[s] + u->uy[s]*u->uy[s]);
+
+        up->ux[s] = (PRECISION) (sinh(phi)*x/r);
+				up->uy[s] = (PRECISION) (sinh(phi)*y/r);
+				up->un[s] = 0.0;
+				up->ut[s] = sqrt(1 + u->ux[s]*u->ux[s] + u->uy[s]*u->uy[s]);
+
 			}
 		}
 	}
@@ -1251,11 +1184,16 @@ void setISGubserInitialCondition(void * latticeParams, const char *rootDirectory
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 
 				e[s] = (PRECISION) ed;
-				p[s] = e[s]/3;
+				p[s] = e[s]/3.0;
 				u->ux[s] = u1;
 				u->uy[s] = u2;
-				u->un[s] = 0;
-				u->ut[s] = sqrt(1 + u1*u1 + u2*u2);
+				u->un[s] = 0.0;
+				u->ut[s] = sqrt(1.0 + u1 * u1 + u2 * u2);
+
+        up->ux[s] = u1;
+				up->uy[s] = u2;
+				up->un[s] = 0.0;
+				up->ut[s] = sqrt(1.0 + u1 * u1 + u2 * u2);
 #ifdef PIMUNU
         		q->pitt[s] = (PRECISION) pitt;
         		q->pitx[s] = (PRECISION) pitx;
@@ -1298,17 +1236,18 @@ void setSodShockTubeInitialCondition(void * latticeParams, void * initCondParams
 
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-				if(x > 0) 	e[s] = (PRECISION) (0.00778147);
-				else 			e[s] = (PRECISION) (0.124503);
-//				if(y > 0) 	e[s] = (PRECISION) (0.00778147);
-//				else 			e[s] = (PRECISION) (0.124503);
-//				if(x > 0) 	e[s] = (PRECISION) (1.0);
-//				else 			e[s] = (PRECISION) (100.0);
-				p[s] = e[s]/3;
-				u->ux[s] = 0;
-				u->uy[s] = 0;
-				u->un[s] = 0;
-				u->ut[s] = 1;
+				if (x > 0) e[s] = (PRECISION) (0.00778147);
+				else 	e[s] = (PRECISION) (0.124503);
+				p[s] = e[s]/3.;
+				u->ux[s] = 0.;
+				u->uy[s] = 0.;
+				u->un[s] = 0.;
+				u->ut[s] = 1.;
+
+        up->ux[s] = 0.;
+				up->uy[s] = 0.;
+				up->un[s] = 0.;
+				up->ut[s] = 1.;
 			}
 		}
 	}
@@ -1339,14 +1278,18 @@ void set2dSodShockTubeInitialCondition(void * latticeParams, void * initCondPara
 
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-				if(y > x) 	e[s] = (PRECISION) (0.00778147);
-//				if(atan(y/x)>0.7853981634) 	e[s] = (PRECISION) (0.00778147);
-				else 			e[s] = (PRECISION) (0.124503);
-				p[s] = e[s]/3;
-				u->ux[s] = 0;
-				u->uy[s] = 0;
-				u->un[s] = 0;
-				u->ut[s] = 1;
+				if (y > x) e[s] = (PRECISION) (0.00778147);
+				else e[s] = (PRECISION) (0.124503);
+				p[s] = e[s]/3.;
+				u->ux[s] = 0.;
+				u->uy[s] = 0.;
+				u->un[s] = 0.;
+				u->ut[s] = 1.;
+
+        up->ux[s] = 0.;
+				up->uy[s] = 0.;
+				up->un[s] = 0.;
+				up->ut[s] = 1.;
 			}
 		}
 	}
@@ -1377,27 +1320,20 @@ void setImplosionBoxInitialCondition(void * latticeParams, void * initCondParams
 
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-//				e[s] = (PRECISION) (0.00778147);
-//				if (sqrt(x*x+y*y)<=0.15) e[s] = (PRECISION) (0.124503);
 
-//				e[s] = (PRECISION) (0.124503);
-//				if (sqrt(x*x+y*y)<=0.15) e[s] = (PRECISION) (0.00778147);
 				e[s] = (PRECISION) (0.00778147);
 				if (sqrt(x*x+y*y)<=0.15) e[s] = (PRECISION) (0.124503);
 
-//				e[s] = (PRECISION) (1.0);
-/*
-				if (x < 1) {
-					if (y < (1-x))
-						e[s] = (PRECISION) (0.00778147);
-				}
-				else e[s] = (PRECISION) (0.124503);
-//*/
-				p[s] = e[s]/3;
-				u->ux[s] = 0;
-				u->uy[s] = 0;
-				u->un[s] = 0;
-				u->ut[s] = 1;
+				p[s] = e[s]/3.;
+				u->ux[s] = 0.;
+				u->uy[s] = 0.;
+				u->un[s] = 0.;
+				u->ut[s] = 1.;
+
+        up->ux[s] = 0.;
+				up->uy[s] = 0.;
+				up->un[s] = 0.;
+				up->ut[s] = 1.;
 			}
 		}
 	}
@@ -1443,11 +1379,16 @@ void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * i
 				if(y > yloc) 	pr = rhoTop*gravity*(1-y);
 				else 				pr = rhoTop*gravity*(1-yloc) + rhoBot*gravity*(yloc-y);
 				e[s] = pr;
-				p[s] = e[s]/3;
-				u->ux[s] = 0;
-				u->uy[s] = 0;
-				u->un[s] = 0;
-				u->ut[s] = 1;
+				p[s] = e[s]/3.;
+				u->ux[s] = 0.;
+				u->uy[s] = 0.;
+				u->un[s] = 0.;
+				u->ut[s] = 1.;
+
+        up->ux[s] = 0.;
+				up->uy[s] = 0.;
+				up->un[s] = 0.;
+				up->ut[s] = 1.;
 			}
 		}
 	}
@@ -1487,11 +1428,15 @@ void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParam
 
         e[s] = (PRECISION) (pr/(1.4-1.));
         p[s] = e[s]/3.0;
-        u->ux[s] = 0;
-        u->uy[s] = (1+cos(2*M_PI*x/Lx))*(1+cos(2*M_PI*y/Ly));
-        //u->uy[s] = 0;
-        u->un[s] = 0;
-        u->ut[s] = sqrt(1+u->uy[s]*u->uy[s]);
+        u->ux[s] = 0.;
+        u->uy[s] = (1.+cos(2*M_PI*x/Lx))*(1+cos(2*M_PI*y/Ly));
+        u->un[s] = 0.;
+        u->ut[s] = sqrt(1.+u->uy[s]*u->uy[s]);
+
+        up->ux[s] = 0.;
+        up->uy[s] = (1.+cos(2*M_PI*x/Lx))*(1+cos(2*M_PI*y/Ly));
+        up->un[s] = 0.;
+        up->ut[s] = sqrt(1.+u->uy[s]*u->uy[s]);
       }
     }
   }
