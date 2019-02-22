@@ -25,6 +25,8 @@ double latticeSpacingY;
 double latticeSpacingRapidity;
 double latticeSpacingProperTime;
 
+double fluxLimiterTheta;
+
 //requires libconfig
 /*
 void loadLatticeParameters(config_t *cfg, const char* configDirectory, void * params) {
@@ -127,6 +129,14 @@ void readLatticeParameters(const char* configDirectory, void * params) {
 		line = line.substr(delimiterPos + 1);
 		coarseProperTimeFOFactor = atoi(line.c_str());
 
+		//for flux limiter theta
+		/*
+		getline(cFile, line);
+		line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
+		delimiterPos = line.find("=");
+		line = line.substr(delimiterPos + 1);
+		fluxLimiterTheta = atof(line.c_str());
+		*/
 	}
 	else std::cerr << "No configuration file found for lattice parameters\n";
 
@@ -142,5 +152,6 @@ void readLatticeParameters(const char* configDirectory, void * params) {
 	lattice->latticeSpacingY = latticeSpacingY;
 	lattice->latticeSpacingRapidity = latticeSpacingRapidity;
 	lattice->latticeSpacingProperTime = latticeSpacingProperTime;
-	lattice->coarseProperTimeFOFactor = coarseProperTimeFOFactor; 
+	lattice->coarseProperTimeFOFactor = coarseProperTimeFOFactor;
+	lattice->fluxLimiterTheta = fluxLimiterTheta;
 }

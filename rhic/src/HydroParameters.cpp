@@ -19,6 +19,7 @@ double shearViscosityToEntropyDensity;
 double freezeoutTemperatureGeV;
 int initializePimunuNavierStokes;
 double regulationTemperatureGeV;
+int doFreezeOut;
 
 //requires libconfig
 /*
@@ -86,6 +87,12 @@ void readHydroParameters(const char* configDirectory, void * params) {
 		line = line.substr(delimiterPos + 1);
 		regulationTemperatureGeV = atof(line.c_str());
 
+		getline(cFile, line);
+		line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
+		delimiterPos = line.find("=");
+		line = line.substr(delimiterPos + 1);
+		doFreezeOut = atoi(line.c_str());
+
 	}
 	else std::cerr << "No configuration file  %s found for hydro parameters\n";
 
@@ -95,4 +102,5 @@ void readHydroParameters(const char* configDirectory, void * params) {
 	hydro->freezeoutTemperatureGeV = freezeoutTemperatureGeV;
 	hydro->initializePimunuNavierStokes = initializePimunuNavierStokes;
 	hydro->regulationTemperatureGeV = regulationTemperatureGeV;
+	hydro->doFreezeOut = doFreezeOut;
 }

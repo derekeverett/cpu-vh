@@ -29,6 +29,8 @@ struct LatticeParameters
 	double latticeSpacingY;
 	double latticeSpacingRapidity;
 	double latticeSpacingProperTime;
+
+	double fluxLimiterTheta;
 };
 
 //requires libconfig

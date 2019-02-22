@@ -14,11 +14,12 @@
 
 struct HydroParameters
 {
-	double initialProperTimePoint;
-	double shearViscosityToEntropyDensity;
-	double freezeoutTemperatureGeV;
-	int initializePimunuNavierStokes;
-	double regulationTemperatureGeV;
+  double initialProperTimePoint;
+  double shearViscosityToEntropyDensity;
+  double freezeoutTemperatureGeV;
+  int initializePimunuNavierStokes;
+  double regulationTemperatureGeV;
+  int doFreezeOut;
 };
 
 //requires libconfig

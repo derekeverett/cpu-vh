@@ -37,11 +37,6 @@
 
 #include "../include/Vorticity.h" //for polarization studies
 
-#define FREQ 10 //write output to file every FREQ timesteps
-#define FOFREQ 10 //call freezeout surface finder every FOFREQ timesteps
-#define FOTEST 0 //if true, freezeout surface file is written with proper times rounded (down) to step size
-#define FOFORMAT 0 // 0 : write f.o. surface to ASCII file ;  1 : write to binary file
-
 void outputDynamicalQuantities(double t, const char *outputDir, void * latticeParams)
 {
   output(e, t, outputDir, "e", latticeParams);
@@ -104,6 +99,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   int initialConditionType = initCond->initialConditionType;
   int numberOfSourceFiles = initCond->numberOfSourceFiles;
 
+  int doFreezeOut = hydro->doFreezeOut;
+  int write_freq = 10; //write output to file every write_freq timesteps
+
   double freezeoutTemperatureGeV = hydro->freezeoutTemperatureGeV;
   const double hbarc = 0.197326938;
   const double freezeoutTemperature = freezeoutTemperatureGeV/hbarc;
@@ -127,9 +125,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   // allocate memory
   allocateHostMemory(nElements);
 
-  //initialize cornelius for freezeout surface finding
-  //see example_4d() in example_cornelius
-  //this works only for full 3+1 d simulation? need to find a way to generalize to n+1 d
+  //initialize cornelius for freezeout surface finding : see example_4d() in example_cornelius
   int dim;
   double *lattice_spacing;
   if ((nx > 1) && (ny > 1) && (nz > 1))
@@ -151,17 +147,13 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   }
   else printf("simulation is not in 3+1D or 2+1D; freezeout finder will not work!\n");
 
-
-  //Cornelius cor;
-  //cor.init(dim, freezeoutEnergyDensity, lattice_spacing);
-
   //declare a vector of FO_Element to hold FO cell info
   std::vector<FO_Element> fo_surf;
 
   double ****energy_density_evoution;
-  energy_density_evoution = calloc4dArray(energy_density_evoution, FOFREQ+1, nx, ny, nz);
+  energy_density_evoution = calloc4dArray(energy_density_evoution, 2, nx, ny, nz);
 
-  //make an array to store all the hydrodynamic variables for FOFREQ time steps
+  //make an array to store all the hydrodynamic variables
   //to be written to file once the freezeout surface is determined by the critical energy density
   #ifdef THERMAL_VORTICITY
   int n_hydro_vars = 16; //u1, u2, u3, e, pi11, pi12, pi13, pi22, pi23, Pi, wtx, wty, wtn, wxy, wxn, wyn (the temperature and pressure are calclated with EoS)
@@ -169,10 +161,8 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   int n_hydro_vars = 10; //u1, u2, u3, e, pi11, pi12, pi13, pi22, pi23, Pi (the temperature and pressure are calclated with EoS)
   #endif
 
-  //rather than declaring a multidimensional array, declare a vector of FO_elements to which we save the hydro info?
-  //but we need to interpolate between cells, and this is easily done with a multidimensional array ...?
   double *****hydrodynamic_evoution;
-  hydrodynamic_evoution = calloc5dArray(hydrodynamic_evoution, n_hydro_vars, FOFREQ+1, nx, ny, nz);
+  hydrodynamic_evoution = calloc5dArray(hydrodynamic_evoution, n_hydro_vars, 2, nx, ny, nz);
 
   //for 3+1D simulations
   double ****hyperCube4D;
@@ -214,69 +204,72 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   std::clock_t t1,t2;
   double totalTime = 0;
   int nsteps = 0;
+
+  //these are to check if all cells are below the freezeout temperature
   int accumulator1 = 0;
   int accumulator2 = 0;
+
+  //how many time steps are taken after all cells are below Tc before stopping evolution
+  int stopEvolutionAfterStepsBelowTc = 3;
+
   // evolve in time
   for (int n = 1; n <= nt+1; ++n)
   {
     // copy variables back to host and write to disk
-    if ((n-1) % FREQ == 0) {
+    if ((n-1) % write_freq == 0)
+    {
       printf("n = %d:%d (t = %.3f),\t (e, p) = (%.3f, %.3f) [fm^-4],\t (T = %.3f [GeV]),\t",
       n - 1, nt, t, e[sctr], p[sctr], effectiveTemperature(e[sctr])*hbarc);
       outputDynamicalQuantities(t, outputDir, latticeParams);
     }
 
     //************************************************************************************\
-    // Freeze-out finder (Derek)
-    // the freezeout surface file is written in the format which can
+    // Freezeout Surface file is written in a format which can
     // be read by iS3D : https://github.com/derekeverett/iS3D
     //************************************************************************************/
-
-    //append the energy density and all hydro variables to storage arrays
-    int nFO = n % FOFREQ;
-
-    //for vorticity and polzn studies
-    #ifdef THERMAL_VORTICITY
-    //swap in the old values so that freezeout volume elements have overlap between calls to finder
-    if (nFO == 0) swapAndSetHydroVariables_Vorticity(energy_density_evoution, hydrodynamic_evoution, q, e, u, wmunu, nx, ny, nz, FOFREQ);
-    //update the values of the rest of the array with current time step
-    else setHydroVariables_Vorticity(energy_density_evoution, hydrodynamic_evoution, q, e, u, wmunu, nx, ny, nz, FOFREQ, n);
-    #else
-    //swap in the old values so that freezeout volume elements have overlap between calls to finder
-    if (nFO == 0) swapAndSetHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ);
-    //update the values of the rest of the array with current time step
-    else setHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz, FOFREQ, n);
-    #endif
-
-    //the n=1 values are written to the it = 2 index of array, so don't start until here
-    int start;
-    if (n <= FOFREQ) start = 2;
-    //if (n <= FOFREQ) start = 1;
-    else start = 0;
-    //call the freezeout finder
-    if (nFO == FOFREQ - 1) callFOFinder(dim, start, nx, ny, nz, n, t0, dt, t, dx, dy, dz, lattice_spacing, freezeoutEnergyDensity,
-                                        hyperCube4D, hyperCube3D, energy_density_evoution, hydrodynamic_evoution,
-                                        freezeoutSurfaceFile, fo_surf);
-
-
-    //if all cells are below freezeout temperature end hydro
-    accumulator1 = 0;
-    accumulator1 = checkForCellsAboveTc(nx, ny, nz, freezeoutEnergyDensity, e);
-    if (accumulator1 == 0) accumulator2 += 1;
-    if (accumulator2 >= FOFREQ + 1) //only break once freezeout finder has had a chance to search/write to file
+    //only write hydro elements to arrays and call freezeout finder every n'th time step
+    //where n = coarseProperTimeFOFactor
+    int nCoarse = n % coarseProperTimeFOFactor;
+    if (nCoarse == 0)
     {
-      //make sure we dont break if we are running dynamical sources
-      if (initialConditionType != 12)
+      if (doFreezeOut)
       {
-        printf("\nAll cells have dropped below freezeout energy density\n");
-        break;
+        //for vorticity and polzn studies
+        #ifdef THERMAL_VORTICITY
+        swapAndSetHydroVariables_Vorticity(energy_density_evoution, hydrodynamic_evoution, q, e, u, wmunu, nx, ny, nz);
+        #else
+        swapAndSetHydroVariables(energy_density_evoution, hydrodynamic_evoution, q, e, u, nx, ny, nz);
+        #endif
+
+        //call the freezeout finder/writer
+        if (dim == 4) callFOFinder3p1D(dim, nx, ny, nz, n, t0, dt, t, dx, dy, dz, lattice_spacing, freezeoutEnergyDensity,
+                                            hyperCube4D, hyperCube3D, energy_density_evoution, hydrodynamic_evoution,
+                                            freezeoutSurfaceFile, fo_surf);
+
+        else if (dim == 3) callFOFinder2p1D(dim, nx, ny, nz, n, t0, dt, t, dx, dy, dz, lattice_spacing, freezeoutEnergyDensity,
+                                            hyperCube4D, hyperCube3D, energy_density_evoution, hydrodynamic_evoution,
+                                            freezeoutSurfaceFile, fo_surf);
+        else printf("Warning: freezeout finder only works in 2+1D or 3+1D! Turn off doFreezeOut ...\n");
       }
-      else if ( (initialConditionType == 12) && (n > numberOfSourceFiles) )
+
+      //if all cells are below freezeout temperature end hydro
+      accumulator1 = checkForCellsAboveTc(nx, ny, nz, freezeoutEnergyDensity, e);
+      if (accumulator1 == 0) accumulator2 += 1;
+      if (accumulator2 >= stopEvolutionAfterStepsBelowTc)
       {
-        printf("\nAll cells have dropped below freezeout energy density and source terms finished \n");
-        break;
+        //make sure we dont break if we are running dynamical sources
+        if (initialConditionType != 12)
+        {
+          printf("\nAll cells have dropped below freezeout energy density\n");
+          break;
+        }
+        else if ( (initialConditionType == 12) && (n > numberOfSourceFiles) )
+        {
+          printf("\nAll cells have dropped below freezeout energy density and dynamical source terms finished \n");
+          break;
+        }
       }
-    }
+    } //if (nCoarse == 0)
 
     t1 = std::clock();
 
@@ -290,7 +283,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 
     t2 = std::clock();
     double delta_time = (t2 - t1) / (double)(CLOCKS_PER_SEC / 1000);
-    if ((n-1) % FREQ == 0) printf("(Elapsed time: %.3f ms)\n",delta_time);
+    if ((n-1) % write_freq == 0) printf("(Elapsed time: %.3f ms)\n",delta_time);
     totalTime+=delta_time;
     ++nsteps;
 
@@ -311,9 +304,8 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   /************************************************************************************/
   freeHostMemory();
   //Deallocate memory used for freezeout finding
-  free4dArray(energy_density_evoution, FOFREQ+1, nx, ny);
-  free5dArray(hydrodynamic_evoution, n_hydro_vars, FOFREQ+1, nx, ny);
+  free4dArray(energy_density_evoution, 2, nx, ny);
+  free5dArray(hydrodynamic_evoution, n_hydro_vars, 2, nx, ny);
   delete [] lattice_spacing;
-
   free4dArray(hyperCube4D, 2, 2, 2);
 }

@@ -26,8 +26,6 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
 
-#define GAMMA_MAX 10.0
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -716,6 +714,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
             // Solve eigenvalue problem in the Landau Frame
             //--------------------------------------------------
 
+            PRECISION gamma_max = 100.0;
             double ttt_in, ttx_in, tty_in, ttn_in, txx_in, txy_in, txn_in, tyy_in, tyn_in, tnn_in;
             double stressTensor[10][DIM];
 
@@ -828,8 +827,8 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
 
                             if (GSL_REAL(v0) < 0) factor=-factor;
 
-                            //ignore eigenvectors with gamma >~ 60
-                            if ( (GSL_REAL(v0) * factor) < GAMMA_MAX)
+                            //ignore eigenvectors with gamma >~ 100
+                            if ( (GSL_REAL(v0) * factor) < gamma_max)
                             {
                                 eigenvalue_exists = 1;
                                 e[is] = GSL_REAL(eigenvalue);
