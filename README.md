@@ -46,7 +46,7 @@ NOTE* The number of points in x, y and eta need to be odd for the grid to be cen
 The freezeout surface file 'surface.dat' is written to the directory `output`; 
 this directory must exist at runtime running cpu-vh.
 The freezeout file is written in a format readable by the Cooper Frye and 
-Sampling Code iS3D : \url{https://github.com/derekeverett/iS3D}.
+Sampling Code iS3D : https://github.com/derekeverett/iS3D.
 
 If reading initial conditions from file, the input files are read from the `input` directory
 
