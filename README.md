@@ -3,7 +3,7 @@ The following papers should be cited when referring to cpu-vh:
 [arXiv:1608.06577 [physics.comp-ph]]
 2) (L. Du) in preparation
 
-# cpu-vh
+## Purpose
 cpu-vh is a code designed for the hydrodynamic simulation of heavy ion collisions.
 Please see arXiv:1608.06577 for a description of the physics, as well as the KT algorithm which 
 is used to solve the hydrodynamic equations of motion. 
@@ -13,7 +13,7 @@ The up to date GPU version of this code can be found at https://github.com/derek
 The two codes are designed to be as similar as possible, with the flexibility of running on 
 heterogeneous computing platforms.
 
-# Installation
+## Installation
 To compile with cmake:
 ```
 mkdir build & cd build
@@ -23,7 +23,7 @@ make install
 ```
 There should now exist an executable cpu-vh in the parent directory. 
 
-# Usage
+## Usage
 
 To run the code:
 ```
