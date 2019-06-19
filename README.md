@@ -1,3 +1,5 @@
+cpu-vh (c) Dennis Bazow, Derek Everett, Lipei Du and Mike McNelis.
+
 The following papers should be cited when referring to cpu-vh:
 1) D. Bazow, U. W. Heinz and M. Strickland, Comput. Phys. Commun. 225, 92 (2018) doi:10.1016/j.cpc.2017.01.015
 [arXiv:1608.06577 [physics.comp-ph]]
