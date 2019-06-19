@@ -46,6 +46,6 @@ this directory must exist at runtime running cpu-vh.
 The freezeout file is written in a format readable by the Cooper Frye and 
 Sampling Code iS3D : \url{https://github.com/derekeverett/iS3D}.
 
-If reading initial conditions from file, the input files are read from the `input` directory. 
+If reading initial conditions from file, the input files are read from the `input` directory
 
 
