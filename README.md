@@ -15,18 +15,20 @@ heterogeneous computing platforms.
 
 # Installation
 To compile with cmake:
-   mkdir build & cd build
-   cmake ..
-   make
-   make install
-
+```
+mkdir build & cd build
+cmake ..
+make
+make install
+```
 There should now exist an executable cpu-vh in the parent directory. 
 
 # Usage
 
 To run the code:
-   sh run.sh <NUMTHREADS>
-
+```
+sh run.sh <NUMTHREADS>
+```
 where <NUMTHREADS> is the number of cores on which to run the code in parallel.  
 Alternatively one can export the enviroment variable `OMP_NUM_THREADS`.
 
