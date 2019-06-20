@@ -1,0 +1,75 @@
+The files lattice.properties, ic.properties and hydro.properties contain all parameters that can be set at runtime.
+
+## Lattice Parameters
+
+lattice.properties sets the hydrodynamic grid parameters
+
+numLatticePointsX=(int)                 : number of points in x
+numLatticePointsY=(int)                 : number of points in y
+numLatticePointsRapidity=(int)     : number of points in rapidity
+numProperTimePoints=(int)          : max number of time steps 
+latticeSpacingX=(float)                     : the grid step in x [fm]
+latticeSpacingY=(float)                     : the grid step in y [fm]
+latticeSpacingRapidity=(float)         : the grid step in rapidity
+latticeSpacingProperTime=(float)  : the time step size in [fm/c]
+
+## Initial Condition Parameters
+
+ic.properties sets the initial condition options
+
+initialConditionType=(int) : This sets which initial condition will be used to initialize hydro
+
+The options are the following:
+
+0. constant energy density profile
+
+1. Isreal-Stewart Gubser initial conditions
+
+2. Optical Glauber initial conditions
+
+3. ideal Gubser initial conditions
+
+4. MC-Glauber	initial conditions
+
+5. Rel. Sod Shock-Tube
+
+6. Implosion in a Box
+
+7. Rayleigh-Taylor Instability
+
+8. Gaussian Pulse
+
+9. Rel. 2D Sod Shock-Tube
+
+10. read from input/e.dat , input/p.dat etc...
+
+11. read from input/Tmunu.dat
+
+12. dynamical sources from UrQMD or SMASH particle list
+
+13. Read initial energy density from c++ vector (JETSCAPE)
+
+14. Read initial stress tensor from preequilibrium c++ vectors (JETSCAPE)
+
+The other parameters are described below
+
+numberOfSourceFiles=(int)                 : The number of particle list files that must be read (Only for type=12)
+numberOfNucleonsPerNuclei=(int)   : Nuclear species by number of nucleons (Only for type = {2,4})
+initialEnergyDensity=(float)                 : Normalization of initial energy density (Only for type = {0,1,2,3,4,5,6,7,8,9})
+scatteringCrossSectionNN=(float)      : (Only for type = {2,4})
+impactParameter=(float)                     : (Only for type = {2,4})
+fractionOfBinaryCollisions=(float)      : (Only for type = {2,4})
+rapidityVariance=(float)                        : (Only for type = {2,4})
+rapidityMean=(float)                             : (Only for type = {2,4})
+
+## Hydrodynamic Parameters
+
+hydro.properties sets the hydrodynamic parameters
+
+initialProperTimePoint=(float)                  : starting proper time of hydro [fm/c]
+shearViscosityToEntropyDensity=(float) : $\eta / s$
+freezeoutTemperatureGeV=(float)          : Temperature [GeV] of freezeout hypersurface
+initializePimunuNavierStokes=(int)         : Initial condition to use for $\pi^{\mu\nu}$ (Only for type = {0,1,2,3,4,5,6,7,8,9})
+
+0. initialize to zero
+1. initialize with Navier-Stokes value
