@@ -60,25 +60,25 @@ void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 		PRECISION piyn, PRECISION pinn, PRECISION Pi,
 		PRECISION dxut, PRECISION dyut, PRECISION dnut, PRECISION dxux, PRECISION dyux, PRECISION dnux,
 		PRECISION dxuy, PRECISION dyuy, PRECISION dnuy, PRECISION dxun, PRECISION dyun, PRECISION dnun, PRECISION dkvk,
-		PRECISION d_etabar, PRECISION d_dt
+		PRECISION d_etabar, PRECISION d_dt //, EOS eqnOfState
 ) {
 	/*********************************************************\
 	 * Temperature dependent shear transport coefficients
 	/*********************************************************/
-	PRECISION T = effectiveTemperature(e);
+	PRECISION T = eqnOfState.effectiveTemperature(e);
 	PRECISION taupiInv = T / 5  / d_etabar;
 	PRECISION beta_pi = (e + p) / 5;
 
 	/*********************************************************\
 	 * Temperature dependent bulk transport coefficients
 	/*********************************************************/
-	PRECISION cs2 = speedOfSoundSquared(e);
+	PRECISION cs2 = eqnOfState.speedOfSoundSquared(e);
 	PRECISION a = 1.0/3.0 - cs2;
 	PRECISION a2 = a*a;
 	PRECISION beta_Pi = 15*a2*(e+p);
 	PRECISION lambda_Pipi = 8*a/5;
 
-   PRECISION zetabar = bulkViscosityToEntropyDensity(T);
+  PRECISION zetabar = bulkViscosityToEntropyDensity(T);
 	PRECISION tauPiInv = 15*a2*T/zetabar;
 
 	PRECISION ut2 = ut * ut;
@@ -601,7 +601,8 @@ int s, int d_ncx, int d_ncy, int d_ncz, PRECISION d_etabar, PRECISION d_dt, PREC
 	PRECISION pimunuRHS[NUMBER_DISSIPATIVE_CURRENTS];
 	setPimunuSourceTerms(pimunuRHS, t, e, p, ut, ux, uy, un, utp, uxp, uyp, unp,
 			pitt, pitx, pity, pitn, pixx, pixy, pixn, piyy, piyn, pinn, Pi,
-			dxut, dyut, dnut, dxux, dyux, dnux, dxuy, dyuy, dnuy, dxun, dyun, dnun, dkvk, d_etabar, d_dt);
+			dxut, dyut, dnut, dxux, dyux, dnux, dxuy, dyuy, dnuy, dxun, dyun, dnun, dkvk, d_etabar, d_dt //, eqnOfState
+		);
 
 	for (unsigned int n = 0; n < NUMBER_DISSIPATIVE_CURRENTS; ++n)
 	{

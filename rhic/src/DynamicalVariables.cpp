@@ -2,7 +2,7 @@
 * DynamicalVariables.cpp
 *
 *  Created on: Oct 22, 2015
-*      Author: bazow
+*  Authors: Dennis Bazow, Derek Everett
 */
 #include <stdlib.h>
 #include <stdio.h>

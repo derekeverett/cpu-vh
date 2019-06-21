@@ -1,14 +1,27 @@
 /*
  * EquationOfState.cpp
  *
- *  Created on: Oct 22, 2015
- *      Author: bazow
+ *  Authors: Dennis Bazow, Derek Everett
+ *
  */
+
+ /*
+ * The functions in EOS class are largely adapted from the source code in
+ * MUSIC(https://github.com/MUSIC-fluid/MUSIC/blob/sims/src/eos_base.cpp)
+ * s.t. we can use the same binary EOS tables interchangeably.
+ */
+
 #include <math.h> // for math functions
 #include <cmath>
+#include <stdio.h>
+#include <sstream>
+#include <fstream>
+#include <string>
 
 #include "../include/DynamicalVariables.h"
 #include "../include/EquationOfState.h"
+
+EOS eqnOfState;
 
 /****************************************************************************\
  * Parameterization based on the Equation of state from the Wuppertal-Budapest collaboration
@@ -28,21 +41,21 @@
  * g2 0.5
 /****************************************************************************/
 
-PRECISION equilibriumPressure(PRECISION e) {
-#ifndef CONFORMAL_EOS
-    // Equation of state from the Wuppertal-Budapest collaboration
-    double e1 = (double)e;
-    double e2 = e*e;
-    double e3 = e2*e;
-    double e4 = e3*e;
-    double e5 = e4*e;
-    double e6 = e5*e;
-    double e7 = e6*e;
-    double e8 = e7*e;
-    double e9 = e8*e;
-    double e10 = e9*e;
-    double e11 = e10*e;
-    double e12 = e11*e;
+PRECISION EOS::equilibriumPressure(PRECISION e) {
+#ifdef WUPERTAL_EOS
+  // Equation of state from the Wuppertal-Budapest collaboration
+  double e1 = (double)e;
+  double e2 = e*e;
+  double e3 = e2*e;
+  double e4 = e3*e;
+  double e5 = e4*e;
+  double e6 = e5*e;
+  double e7 = e6*e;
+  double e8 = e7*e;
+  double e9 = e8*e;
+  double e10 = e9*e;
+  double e11 = e10*e;
+  double e12 = e11*e;
 
 	double a0 = -0.25181736420168666;
 	double a1 = 9737.845799644809;
@@ -73,14 +86,28 @@ PRECISION equilibriumPressure(PRECISION e) {
 	double b11 = 5.928138360995685e-11;
 	double b12 = 3.2581066229887368e-18;
 	PRECISION b = (PRECISION)fma(b12,e12,fma(b11,e11,fma(b10,e10,fma(b9,e9,fma(b8,e8,fma(b7,e7,fma(b6,e6,fma(b5,e5,fma(b4,e4,fma(b3,e3,fma(b2,e2,fma(b1,e1,b0))))))))))));
-    return a/b;
+
+  return a / b;
+
+#elif defined(HOTQCDHRG_EOS)
+
+  double f = interpolate1D(e, pressure_tb);  // 1/fm^4
+  return std::max(1.e-15, f);
+
+#elif defined(CONFORMAL_EOS)
+
+  return e / 3.;
+
 #else
-    return e/3;
+
+  printf("No EoS Defined in EquationOfState.h ! \n");
+  exit(-1);
+
 #endif
 }
 
-PRECISION speedOfSoundSquared(PRECISION e) {
-#ifndef CONFORMAL_EOS
+PRECISION EOS::speedOfSoundSquared(PRECISION e) {
+#ifdef WUPERTAL_EOS
 	// Speed of sound from the Wuppertal-Budapest collaboration
 	double e1 = (double) e;
 	double e2 = e * e1;
@@ -95,6 +122,7 @@ PRECISION speedOfSoundSquared(PRECISION e) {
 	double e11 = e10 * e1;
 	double e12 = e11 * e1;
 	double e13 = e12 * e1;
+
 	return (5.191934309650155e-32 + 4.123605749683891e-23 * e
 			+ 3.1955868410879504e-16 * e2 + 1.4170364808063119e-10 * e3
 			+ 6.087136671592452e-6 * e4 + 0.02969737949090831 * e5
@@ -109,13 +137,30 @@ PRECISION speedOfSoundSquared(PRECISION e) {
 					+ 15190.225535036281 * e8 + 590.2572000057821 * e9
 					+ 293.99144775704605 * e10 + 21.461303090563028 * e11
 					+ 0.09301685073435291 * e12 + 0.000024810902623582917 * e13);
-#else
-	return 1/3;
+
+#elif defined(HOTQCDHRG_EOS)
+
+  PRECISION v_min = 0.01;
+  PRECISION v_max = 1. / 3.;
+
+  PRECISION delta_e = e_spacing;
+  PRECISION p = equilibriumPressure(e);
+  PRECISION p_r = equilibriumPressure(e + delta_e);
+  PRECISION delta_p = p_r - p;
+  PRECISION dpde = delta_e / delta_p;
+  PRECISION v_sound = dpde;
+  v_sound = std::max(v_min, std::min(v_max, v_sound));
+  return v_sound;
+
+#elif defined(CONFORMAL_EOS)
+
+	return 1./3.;
+
 #endif
 }
 
-PRECISION effectiveTemperature(PRECISION e) {
-#ifndef CONFORMAL_EOS
+PRECISION EOS::effectiveTemperature(PRECISION e) {
+#ifdef WUPERTAL_EOS
 	// Effective temperature from the Wuppertal-Budapest collaboration
 	double e1 = (double) e;
 	double e2 = e * e1;
@@ -140,13 +185,21 @@ PRECISION effectiveTemperature(PRECISION e) {
 					+ 11179.193315394154 * e6 + 17965.67607192861 * e7
 					+ 1051.0730543534657 * e8 + 5.916312075925817 * e9
 					+ 0.003778342768228011 * e10 + 1.8472801679382593e-7 * e11);
-#else
+
+#elif defined(HOTQCDHRG_EOS)
+
+  double f = interpolate1D(e, temperature_tb);
+  return std::max(1.e-15, f);
+
+#elif defined(CONFORMAL_EOS)
+
 	return powf(e/EOS_FACTOR, 0.25);
+
 #endif
 }
 
-PRECISION equilibriumEnergyDensity(PRECISION T) {
-#ifndef CONFORMAL_EOS
+PRECISION EOS::equilibriumEnergyDensity(PRECISION T) {
+#ifdef WUPERTAL_EOS
 	// Effective temperature from the Wuppertal-Budapest collaboration
 	double T1 = (double) T;
 	double T2 = T1 * T1;
@@ -171,6 +224,7 @@ PRECISION equilibriumEnergyDensity(PRECISION T) {
 	double T21 = T20 * T1;
 	double T22 = T21 * T1;
 	double T23 = T22 * T1;
+
 	return (-0.011958188410851651 + 119.89423098138208 * T
 			- 3156.9475699248055 * T2 + 32732.86844374939 * T3
 			- 187899.8994764422 * T4 + 712537.3610845465 * T5
@@ -195,8 +249,112 @@ PRECISION equilibriumEnergyDensity(PRECISION T) {
 					+ 1591.3177623932843 * T18 - 678.748230997762 * T19
 					- 33.58687934953277 * T20 + 3.2520554133126285 * T21
 					- 0.19647288043440464 * T22 + 0.005443394551264717 * T23);
-#else
+
+#elif defined(HOTQCDHRG_EOS)
+
+  double T_goal = T;         // convert to 1/fm
+  double eps_lower = 1e-15;
+  double eps_upper = e_max;
+  double eps_mid   = (eps_upper + eps_lower) / 2.;
+  double T_lower   = effectiveTemperature(eps_lower);
+  double T_upper   = effectiveTemperature(eps_upper);
+
+  int ntol         = 1000;
+  if (T_goal < T_lower) return(eps_lower);
+
+  double rel_accuracy = 1e-8;
+  double abs_accuracy = 1e-15;
+  double T_mid;
+  int iter = 0;
+  while ( ( (eps_upper - eps_lower) / eps_mid > rel_accuracy && (eps_upper - eps_lower) > abs_accuracy) && iter < ntol)
+  {
+      T_mid = effectiveTemperature(eps_mid);
+      if (T_goal < T_mid) eps_upper = eps_mid;
+      else eps_lower = eps_mid;
+      eps_mid = (eps_upper + eps_lower) / 2.;
+      iter++;
+  }
+  if (iter == ntol)
+  {
+      printf("equilibriumEnergyDensity(T) max iterations reached! \n");
+      exit(1);
+  }
+  return (eps_mid);
+
+
+#elif defined(CONFORMAL_EOS)
+
 	return EOS_FACTOR*powf(T, 4.0);
+
 #endif
 }
 
+void EOS::loadEOSHotQCDHRG()
+{
+  const double hbarc = 0.197326938;
+  e_length = 100000;
+
+  // read the lattice EOS pressure, temperature, and
+  printf("reading EOS hotQCD matched to HRG...");
+  std::string path = "EoS/hrg_hotqcd_eos_binary.dat";
+
+  std::ifstream eos_file(path, std::ios::binary);
+  if (!eos_file)
+  {
+    printf("Can not find the EoS file! Exiting!");
+    exit(1);
+  }
+
+  double temp;
+  for (int ii = 0; ii < e_length; ii++)
+  {
+    eos_file.read((char*)&temp, sizeof(double));  // e [GeV / fm^3]
+    temp /= hbarc;      // e [fm^-4]
+    if (ii == 0) e_min = temp;
+    if (ii == 1) e_spacing = temp - e_min;
+    if (ii == e_length - 1) e_max = temp;
+
+    eos_file.read((char*)&temp, sizeof(double));  // P [GeV / fm^3]
+    pressure_tb[ii] = temp / hbarc;    // P [fm^-4]
+
+    eos_file.read((char*)&temp, sizeof(double));  // s
+
+    eos_file.read((char*)&temp, sizeof(double));  // T [GeV]
+    temperature_tb[ii] = temp / hbarc;            // T [fm^-1]
+  }
+
+  printf("Done reading EOS. \n");
+}
+
+double EOS::interpolate1D(double e, double *table)
+{
+  // This is a generic linear interpolation routine for EOS at zero mu_B
+  // it assumes the class has already read in
+  //        P(e), T(e), s(e)
+  // as one-dimensional arrays on an equally spacing lattice grid
+  // units: e is in 1/fm^4
+  //double local_ed = e*hbarc;  // [GeV/fm^3]
+  double local_ed = e;
+
+  const double e0       = e_min;
+  const double delta_e  = e_spacing;
+  const int N_e         = e_length;
+
+  // compute the indices
+  int idx_e  = static_cast<int>( (local_ed - e0) / delta_e );
+
+  // treatment for overflow, use the last two points to do extrapolation
+  idx_e  = std::min(N_e - 2, idx_e);
+
+  // check underflow
+  idx_e  = std::max(0, idx_e);
+
+  const double frac_e = (local_ed - ( idx_e * delta_e + e0) ) / delta_e;
+
+  double result;
+  double temp1 = table[idx_e];
+  double temp2 = table[idx_e + 1];
+  result = temp1 * (1. - frac_e) + temp2 * frac_e;
+
+  return result;
+}

@@ -75,7 +75,7 @@ void * latticeParams, void * hydroParams)
         PRECISION un_np = u->un[snp];
 
         //get the Temperature at neighbors
-        PRECISION T = effectiveTemperature(e[s]);
+        PRECISION T = eqnOfState.effectiveTemperature(e[s]);
         /*
         PRECISION T_p = effectiveTemperature(e[s]);
         PRECISION T_xm = effectiveTemperature(e[sxm]);

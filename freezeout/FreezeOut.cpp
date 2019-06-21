@@ -199,7 +199,7 @@ double interpolateVariable3D(double *****hydrodynamic_evoution, int ivar, int it
 
 void callFOFinder3p1D(int dim, int nx, int ny, int nz, int n, double t0, double dt, double t, double dx, double dy, double dz, double *lattice_spacing, double freezeoutEnergyDensity,
   double ****hyperCube4D, double ***hyperCube3D, double ****energy_density_evoution, double *****hydrodynamic_evoution,
-  std::ofstream& freezeoutSurfaceFile, std::vector<FO_Element>& fo_surf)
+  std::ofstream& freezeoutSurfaceFile, std::vector<FO_Element>& fo_surf, EOS eqnOfState)
 {
 
   //besides writing centroid and normal to file, write all the hydro variables
@@ -250,8 +250,8 @@ void callFOFinder3p1D(int dim, int nx, int ny, int nz, int n, double t0, double 
           double un = interpolateVariable4D(hydrodynamic_evoution, 2, 0, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
 
           double eps = interpolateVariable4D(hydrodynamic_evoution, 3, 0, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
-          double T = effectiveTemperature(eps);
-          double P = equilibriumPressure(eps);
+          double T = eqnOfState.effectiveTemperature(eps);
+          double P = eqnOfState.equilibriumPressure(eps);
 
           double pixx = interpolateVariable4D(hydrodynamic_evoution, 4, 0, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
           double pixy = interpolateVariable4D(hydrodynamic_evoution, 5, 0, ix, iy, iz, tau_frac, x_frac, y_frac, z_frac);
@@ -281,7 +281,7 @@ void callFOFinder3p1D(int dim, int nx, int ny, int nz, int n, double t0, double 
 
 void callFOFinder2p1D(int dim, int nx, int ny, int nz, int n, double t0, double dt, double t, double dx, double dy, double dz, double *lattice_spacing, double freezeoutEnergyDensity,
   double ****hyperCube4D, double ***hyperCube3D, double ****energy_density_evoution, double *****hydrodynamic_evoution,
-  std::ofstream& freezeoutSurfaceFile, std::vector<FO_Element>& fo_surf)
+  std::ofstream& freezeoutSurfaceFile, std::vector<FO_Element>& fo_surf, EOS eqnOfState)
   {
     //besides writing centroid and normal to file, write all the hydro variables
     //#pragma omp parallel for collapse(2)
@@ -330,8 +330,8 @@ void callFOFinder2p1D(int dim, int nx, int ny, int nz, int n, double t0, double 
 
           //energy density, Temperature, Pressure
           double eps = interpolateVariable3D(hydrodynamic_evoution, 3, 0, ix, iy, tau_frac, x_frac, y_frac);
-          double T = effectiveTemperature(eps);
-          double P = equilibriumPressure(eps);
+          double T = eqnOfState.effectiveTemperature(eps);
+          double P = eqnOfState.equilibriumPressure(eps);
 
           //contravariant components of shear stress
           double pixx = interpolateVariable3D(hydrodynamic_evoution, 4, 0, ix, iy, tau_frac, x_frac, y_frac);

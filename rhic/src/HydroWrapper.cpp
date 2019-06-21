@@ -4,6 +4,7 @@
 #include "../include/HydroWrapper.h"
 #include "../include/HydroInitialTmunu.h"
 #include "../include/RuntimeParameters.h"
+#include "../include/EquationOfState.h"
 
 const char *version = "";
 const char *address = "";
@@ -83,7 +84,7 @@ int HYDRO::run_hydro_no_cli()
   init_tmunu.piyn_in = initial_piyn;
   init_tmunu.pinn_in = initial_pinn;
   #endif
-  
+
   #ifdef PI
   init_tmunu.Pi_in = initial_Pi;
   #endif
@@ -183,6 +184,10 @@ int HYDRO::run_hydro(int argc, char **argv)
   readLatticeParameters(cli.configDirectory, &latticeParams);
   readInitialConditionParameters(cli.configDirectory, &initCondParams);
   readHydroParameters(cli.configDirectory, &hydroParams);
+
+  //load the EoS
+  //EOS eqnOfState;
+  eqnOfState.loadEOSHotQCDHRG();
 
   //clock
   double sec = 0.0;

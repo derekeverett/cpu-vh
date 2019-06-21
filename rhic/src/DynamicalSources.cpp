@@ -2,7 +2,7 @@
  * DynamicalSources.cpp
  *
  *  Created on: Nov 25, 2017
- *  Author: Lipei
+ *  Author: Lipei Du
  */
 
 #include <math.h> // for math functions

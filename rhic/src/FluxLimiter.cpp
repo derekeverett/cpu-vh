@@ -2,7 +2,7 @@
  * FluxLimiter.cpp
  *
  *  Created on: Oct 22, 2015
- *      Author: bazow
+ *      Author: Dennis Bazow
  */
 
 #include <math.h>

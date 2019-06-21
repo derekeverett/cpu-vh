@@ -2,7 +2,7 @@
  * EnergyMomentumTensor.cpp
  *
  *  Created on: Oct 22, 2015
- *      Author: bazow
+ *  Authors: Dennis Bazow, Derek Everett
  */
 #include <math.h> // for math functions
 #include <stdio.h>
@@ -19,15 +19,17 @@
 #define MAX_ITERS_BI 1000000 //Maximum number of newton-raphson iterations
 const PRECISION ACC = 1.0e-3; //Maximum relative error in energy density
 
-PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRECISION M, PRECISION Pi) {
+PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRECISION M, PRECISION Pi
+	//,EOS eqnOfState
+) {
 
 	#ifndef CONFORMAL_EOS
 	PRECISION e0 = ePrev;	// initial guess for energy density
 
 	//NEWTON-RAPHSON METHOD
 	for (int j = 0; j < MAX_ITERS_NR; ++j) {
-		PRECISION p = equilibriumPressure(e0);
-		PRECISION cs2 = speedOfSoundSquared(e0);
+		PRECISION p = eqnOfState.equilibriumPressure(e0);
+		PRECISION cs2 = eqnOfState.speedOfSoundSquared(e0);
 		PRECISION cst2 = p/e0;
 
 		PRECISION A = M0 * (1.0 - cst2) + Pi;
@@ -50,13 +52,13 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 	PRECISION e_hi = 2.0 * (ePrev + 1.0);
 
 	for (int j = 0; j < MAX_ITERS_BI; ++j) {
-		PRECISION p_lo = equilibriumPressure(e_lo);
-		PRECISION p_mid = equilibriumPressure(e_mid);
-		PRECISION p_hi = equilibriumPressure(e_hi);
+		PRECISION p_lo = eqnOfState.equilibriumPressure(e_lo);
+		PRECISION p_mid = eqnOfState.equilibriumPressure(e_mid);
+		PRECISION p_hi = eqnOfState.equilibriumPressure(e_hi);
 
-		PRECISION cs2_lo = speedOfSoundSquared(e_lo);
-		PRECISION cs2_mid = speedOfSoundSquared(e_mid);
-		PRECISION cs2_hi = speedOfSoundSquared(e_hi);
+		PRECISION cs2_lo = eqnOfState.speedOfSoundSquared(e_lo);
+		PRECISION cs2_mid = eqnOfState.speedOfSoundSquared(e_mid);
+		PRECISION cs2_hi = eqnOfState.speedOfSoundSquared(e_hi);
 
 		PRECISION cst2_lo = p_lo/e_lo;
 		PRECISION cst2_mid = p_mid/e_mid;
@@ -115,6 +117,7 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 void getInferredVariables(PRECISION t, const PRECISION * const __restrict__ q, PRECISION ePrev,
 PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 PRECISION * const __restrict__ ut, PRECISION * const __restrict__ ux, PRECISION * const __restrict__ uy, PRECISION * const __restrict__ un
+//,EOS eqnOfState
 ) {
 	PRECISION ttt = q[0];
 	PRECISION ttx = q[1];
@@ -198,7 +201,7 @@ if (isnan(*e)) {
 	printf("pitt=%.3f,\t pitx=%.3f,\t pity=%.3f,\t pitn=%.3f\n", pitt, pitx, pity, pitn);
 	exit(-1);
 }
-	*p = equilibriumPressure(*e);
+	*p = eqnOfState.equilibriumPressure(*e);
 	if (*e < 1.e-7) {
 		*e = 1.e-7;
 		*p = 1.e-7;

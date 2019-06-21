@@ -38,7 +38,9 @@
 
 //this reads all hydro variables from a single file; this way we do not need to fetch the coordinates many times
 //note that the file must contain values for all dissipative currents, even if they are zero !!!
-void setInitialTmunuFromFile(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory) {
+void setInitialTmunuFromFile(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory
+  //, EOS eqnOfState
+) {
     struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
     struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
     struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
@@ -103,7 +105,9 @@ void setInitialTmunuFromFile(void * latticeParams, void * initCondParams, void *
 }
 
 //this function reads a separate file for every hydrodynamic variable
-void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory) {
+void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory
+  //, EOS eqnOfState
+) {
     struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
     struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
     struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
@@ -132,7 +136,7 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
                     fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
                     int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
                     e[s] =  (PRECISION) value;
-                    p[s] = equilibriumPressure( e[s] );
+                    p[s] = eqnOfState.equilibriumPressure( e[s] );
                     //ep[s] = (PRECISION) value;
                     //printf("e [ %d ] = %f\n", s, e[s]);
                 }
@@ -502,7 +506,10 @@ void setFluidVelocityInitialCondition(void * latticeParams, void * hydroParams) 
  *		- Navier-Stokes value, i.e. \pi^\mu\nu = 2 * (\epsilon + P) / T * \eta/S * \sigma^\mu\nu
  * 	- No initial pressure anisotropies (\pi^\mu\nu = 0)
 /*********************************************************************************************************/
-void setPimunuNavierStokesInitialCondition(void * latticeParams, void * initCondParams, void * hydroParams) {
+void setPimunuNavierStokesInitialCondition(void * latticeParams, void * initCondParams, void * hydroParams
+  //,EOS eqnOfState
+)
+{
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 	struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
@@ -524,7 +531,7 @@ void setPimunuNavierStokesInitialCondition(void * latticeParams, void * initCond
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 //				double T = pow(e[s]/e0, 0.25);
-				PRECISION T = effectiveTemperature(e[s]);
+				PRECISION T = eqnOfState.effectiveTemperature(e[s]);
 				if (T == 0) T = 1.e-3;
 				//PRECISION pinn = -2/(3*t*t*t)*etabar*(e[s]+p[s])/T; //wrong by factor of 2
 				PRECISION pinn = -4.0/(3.0*t*t*t)*etabar*(e[s] + p[s]) / T;
@@ -567,7 +574,9 @@ void setPimunuNavierStokesInitialCondition(void * latticeParams, void * initCond
 	}
 }
 
-void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void * hydroParams) {
+void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void * hydroParams
+  //, EOS eqnOfState
+) {
 	struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
 	int initializePimunuNavierStokes = hydro->initializePimunuNavierStokes;
 	if (initializePimunuNavierStokes==1) {
@@ -616,7 +625,9 @@ void setPimunuInitialCondition(void * latticeParams, void * initCondParams, void
 //*********************************************************************************************************\
 //* Initial conditions for hydro with dynamical sources
 //*********************************************************************************************************/
-void setICfromSource(void * latticeParams, void * initCondParams, void * hydroParams, const char * rootDirectory){
+void setICfromSource(void * latticeParams, void * initCondParams, void * hydroParams, const char * rootDirectory
+  //, EOS eqnOfState
+){
 
     struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
     struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
@@ -658,7 +669,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
             printf("initialized to be vaccum \n");
 
             double ed = initialEnergyDensity;
-            double pd = equilibriumPressure(ed);
+            double pd = eqnOfState.equilibriumPressure(ed);
 
             //--------------------------------------------------
             // Initialize energy, baryon and pressure density, also
@@ -873,7 +884,7 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
                         up->ux[is] = u->ux[is];
                         up->uy[is] = u->uy[is];
                         up->un[is] = u->un[is];
-                        p[is] = equilibriumPressure(e[is]);
+                        p[is] = eqnOfState.equilibriumPressure(e[is]);
                     }
                 }
             }
@@ -918,12 +929,14 @@ void setICfromSource(void * latticeParams, void * initCondParams, void * hydroPa
 /*********************************************************************************************************\
  * Constant initial energy density distribution
 /*********************************************************************************************************/
-void setConstantEnergyDensityInitialCondition(void * latticeParams, void * initCondParams) {
+void setConstantEnergyDensityInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 	double initialEnergyDensity = initCond->initialEnergyDensity;
 
 	double T0 = 3.05;
-	double ed = equilibriumEnergyDensity(T0);
+	double ed = eqnOfState.equilibriumEnergyDensity(T0);
 
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	int nx = lattice->numLatticePointsX;
@@ -936,7 +949,7 @@ void setConstantEnergyDensityInitialCondition(void * latticeParams, void * initC
 			for(int k = 2; k < nz+2; ++k) {
 				int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
 				e[s] = (PRECISION) ed;
-				p[s] = equilibriumPressure(e[s]);
+				p[s] = eqnOfState.equilibriumPressure(e[s]);
 			}
 		}
 	}
@@ -1032,7 +1045,9 @@ void longitudinalEnergyDensityDistribution(double * const __restrict__ eL, void 
 /*********************************************************************************************************\
  * Continuous optical glauber Glauber initial energy density distribution
 /*********************************************************************************************************/
-void setGlauberInitialCondition(void * latticeParams, void * initCondParams) {
+void setGlauberInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1059,7 +1074,7 @@ void setGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 				double energyDensityLongitudinal = eL[k-2];
 				double ed = (energyDensityTransverse * energyDensityLongitudinal) + 1.e-3;
 				e[s] = (PRECISION) ed;
-				p[s] = equilibriumPressure(e[s]);
+				p[s] = eqnOfState.equilibriumPressure(e[s]);
 			}
 		}
 	}
@@ -1068,7 +1083,9 @@ void setGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 /*********************************************************************************************************\
  * Monte carlo Glauber initial energy density distribution
 /*********************************************************************************************************/
-void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams) {
+void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1095,7 +1112,7 @@ void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams) {
 				double energyDensityLongitudinal = eL[k-2];
 				double ed = (energyDensityTransverse * energyDensityLongitudinal) + 1.e-3;
 				e[s] = (PRECISION) ed;
-				p[s] = equilibriumPressure(e[s]);
+				p[s] = eqnOfState.equilibriumPressure(e[s]);
 			}
 		}
 	}
@@ -1105,7 +1122,9 @@ void setMCGlauberInitialCondition(void * latticeParams, void * initCondParams) {
  * Initial conditions for the Gubser ideal hydro test
  *		- set energy density, pressure, fluid velocity u^\mu, and \pi^\mu\ny
 /*********************************************************************************************************/
-void setIdealGubserInitialCondition(void * latticeParams, void * initCondParams) {
+void setIdealGubserInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1153,7 +1172,9 @@ void setIdealGubserInitialCondition(void * latticeParams, void * initCondParams)
  * Initial conditions for the Gubser viscous hydro test
  *		- set energy density, pressure, fluid velocity u^\mu, and \pi^\mu\ny
 /*********************************************************************************************************/
-void setISGubserInitialCondition(void * latticeParams, const char *rootDirectory) {
+void setISGubserInitialCondition(void * latticeParams, const char *rootDirectory
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 
 	int nx = lattice->numLatticePointsX;
@@ -1214,7 +1235,9 @@ void setISGubserInitialCondition(void * latticeParams, const char *rootDirectory
  * Initial conditions for the relativistic Sod shock-tube test
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
-void setSodShockTubeInitialCondition(void * latticeParams, void * initCondParams) {
+void setSodShockTubeInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1256,7 +1279,9 @@ void setSodShockTubeInitialCondition(void * latticeParams, void * initCondParams
  * Initial conditions for the relativistic Sod shock-tube test
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
-void set2dSodShockTubeInitialCondition(void * latticeParams, void * initCondParams) {
+void set2dSodShockTubeInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1298,7 +1323,9 @@ void set2dSodShockTubeInitialCondition(void * latticeParams, void * initCondPara
  * Initial conditions for the implosion in a box test
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
-void setImplosionBoxInitialCondition(void * latticeParams, void * initCondParams) {
+void setImplosionBoxInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1342,7 +1369,9 @@ void setImplosionBoxInitialCondition(void * latticeParams, void * initCondParams
  * Initial conditions for the implosion in a box test
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
-void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * initCondParams) {
+void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1397,7 +1426,9 @@ void setRayleighTaylorInstibilityInitialCondition(void * latticeParams, void * i
  * Initial conditions for the implosion in a box test
  *		- set energy density, pressure, fluid velocity u^\mu
 /*********************************************************************************************************/
-void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParams) {
+void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParams
+  //, EOS eqnOfState
+) {
   struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
   struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 
@@ -1451,7 +1482,9 @@ void setGaussianPulseInitialCondition(void * latticeParams, void * initCondParam
  *		4 - Monte carlo Glauber
  *		5 - Relativistic Sod shock-tube test
 /*********************************************************************************************************/
-void setInitialConditions(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory) {
+void setInitialConditions(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory
+  //, EOS eqnOfState
+) {
 	struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
 	int initialConditionType = initCond->initialConditionType;
 	printf("Setting initial conditions: ");
@@ -1536,7 +1569,9 @@ void setInitialConditions(void * latticeParams, void * initCondParams, void * hy
 	}
 }
 
-void setICFromEnergyDensityVector(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu)
+void setICFromEnergyDensityVector(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu
+  //, EOS eqnOfState
+)
 {
   printf("Initialize from initial energy density vector ...\n");
   const double hbarc = 0.197326938;
@@ -1559,7 +1594,7 @@ void setICFromEnergyDensityVector(void * latticeParams, void * initCondParams, v
         int sm = columnMajorLinearIndex(im, jm, km, nx, ny, nz);
 
         e[s] =  (PRECISION) (init_tmunu.e_in[sm] / hbarc) + (PRECISION)(1.0e-3);
-        p[s] = equilibriumPressure( e[s] );
+        p[s] = eqnOfState.equilibriumPressure( e[s] );
         u->ut[s] = 1.0;
         u->ux[s] = 0.0;
         u->uy[s] = 0.0;
@@ -1588,7 +1623,9 @@ void setICFromEnergyDensityVector(void * latticeParams, void * initCondParams, v
   } //for (int i = 2; i < nx+2; ++i)
 }
 
-void setICFromPreequilVectors(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu)
+void setICFromPreequilVectors(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, HydroInitialTmunu init_tmunu
+  //, EOS eqnOfState
+)
 {
   printf("Initialize from preequilibrium vectors ...\n");
   const double hbarc = 0.197326938;
@@ -1610,7 +1647,7 @@ void setICFromPreequilVectors(void * latticeParams, void * initCondParams, void 
         int km = k-2;
         int sm = columnMajorLinearIndex(im, jm, km, nx, ny, nz);
         e[s] =  (PRECISION) (init_tmunu.e_in[sm] / hbarc) + (PRECISION)(1.0e-3);
-        p[s] = equilibriumPressure( e[s] );
+        p[s] = eqnOfState.equilibriumPressure( e[s] );
 
         PRECISION ux, uy, un, ut;
         if ( fabs(init_tmunu.ux_in[sm]) < 1.0e-7 ) ux = 0.0;

@@ -2,7 +2,7 @@
  * FullyDiscreteKurganovTadmorScheme.cpp
  *
  *  Created on: Oct 23, 2015
- *      Author: bazow
+ *  Authors: Dennis Bazow, Derek Everett
  */
 
 #include <stdlib.h>
@@ -692,11 +692,11 @@ regulateDissipativeCurrents(PRECISION t,
 	const CONSERVED_VARIABLES * const __restrict__ currentVars,
 	const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 	const FLUID_VELOCITY * const __restrict__ u,
-	int ncx, int ncy, int ncz, PRECISION T_reg
+	int ncx, int ncy, int ncz, PRECISION e_reg
 ) {
 
 	//only cells with Temperature < T_reg have dissipative currents regulated
-	PRECISION e_reg = equilibriumEnergyDensity(T_reg);
+	//PRECISION e_reg = eqnOfState.equilibriumEnergyDensity(T_reg);
 
 	#pragma omp parallel for collapse(3)
 	#ifdef TILE
@@ -831,7 +831,7 @@ regulateDissipativeCurrents(PRECISION t,
 				facBulk = exp(arg);
 				#endif
 
-				//ensure that regulation only happens for cells with temperature less than chosen regulation temperature 
+				//ensure that regulation only happens for cells with temperature less than chosen regulation temperature
 				if (e[s] > e_reg) {facShear = 1.0; facBulk = 1.0;}
 
 				#ifdef PIMUNU
@@ -865,7 +865,7 @@ regulateDissipativeCurrents(PRECISION t,
 
 void
 rungeKutta2(PRECISION t, PRECISION dt, CONSERVED_VARIABLES * __restrict__ q, CONSERVED_VARIABLES * __restrict__ Q,
-void * latticeParams, void * hydroParams
+void * latticeParams, void * hydroParams //, EOS eqnOfState
 ) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
 	struct HydroParameters * hydro = (struct HydroParameters *) hydroParams;
@@ -885,6 +885,8 @@ void * latticeParams, void * hydroParams
 	PRECISION regulationTemperatureGeV = (PRECISION)(hydro->regulationTemperatureGeV);
 	PRECISION hbarc = 0.197326938;
 	PRECISION T_reg = regulationTemperatureGeV / hbarc;
+	PRECISION e_reg = eqnOfState.equilibriumEnergyDensity(T_reg);
+
 
 	//===================================================
 	// STEP 1:
@@ -899,7 +901,7 @@ void * latticeParams, void * hydroParams
 
 	setInferredVariablesKernel(qS, e, p, uS, t, latticeParams);
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
-	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz, T_reg);
+	regulateDissipativeCurrents(t, qS, e, p, uS, ncx, ncy, ncz, e_reg);
 	#endif
 	setGhostCells(qS, e, p, uS, latticeParams);
 
@@ -916,7 +918,7 @@ void * latticeParams, void * hydroParams
 	swapFluidVelocity(&up, &u);
 	setInferredVariablesKernel(Q, e, p, u, t, latticeParams);
 	#ifdef REGULATE_DISSIPATIVE_CURRENTS
-	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz, T_reg);
+	regulateDissipativeCurrents(t, Q, e, p, u, ncx, ncy, ncz, e_reg);
 	#endif
 	setGhostCells(Q, e, p, u, latticeParams);
 }

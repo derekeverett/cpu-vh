@@ -69,7 +69,10 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   #endif
 }
 
-void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir, HydroInitialTmunu init_tmunu)
+void run(void * latticeParams, void * initCondParams, void * hydroParams,
+        const char *rootDirectory, const char *outputDir, HydroInitialTmunu init_tmunu
+        //, EOS eqnOfState
+      )
 {
   struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
   struct InitialConditionParameters * initCond = (struct InitialConditionParameters *) initCondParams;
@@ -105,7 +108,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
   double freezeoutTemperatureGeV = hydro->freezeoutTemperatureGeV;
   const double hbarc = 0.197326938;
   const double freezeoutTemperature = freezeoutTemperatureGeV/hbarc;
-  const double freezeoutEnergyDensity = equilibriumEnergyDensity(freezeoutTemperature);
+  const double freezeoutEnergyDensity = eqnOfState.equilibriumEnergyDensity(freezeoutTemperature);
   printf("Grid size = %d x %d x %d\n", nx, ny, nz);
   printf("spatial resolution = (%.3f, %.3f, %.3f)\n", lattice->latticeSpacingX, lattice->latticeSpacingY, lattice->latticeSpacingRapidity);
   printf("freezeout temperature = %.3f [fm^-1] (eF = %.3f [fm^-4])\n", freezeoutTemperature, freezeoutEnergyDensity);
@@ -219,7 +222,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
     if ((n-1) % write_freq == 0)
     {
       printf("n = %d:%d (t = %.3f),\t (e, p) = (%.3f, %.3f) [fm^-4],\t (T = %.3f [GeV]),\t",
-      n - 1, nt, t, e[sctr], p[sctr], effectiveTemperature(e[sctr])*hbarc);
+      n - 1, nt, t, e[sctr], p[sctr], eqnOfState.effectiveTemperature(e[sctr])*hbarc);
       outputDynamicalQuantities(t, outputDir, latticeParams);
     }
 
@@ -244,11 +247,11 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
         //call the freezeout finder/writer
         if (dim == 4) callFOFinder3p1D(dim, nx, ny, nz, n, t0, dt, t, dx, dy, dz, lattice_spacing, freezeoutEnergyDensity,
                                             hyperCube4D, hyperCube3D, energy_density_evoution, hydrodynamic_evoution,
-                                            freezeoutSurfaceFile, fo_surf);
+                                            freezeoutSurfaceFile, fo_surf, eqnOfState);
 
         else if (dim == 3) callFOFinder2p1D(dim, nx, ny, nz, n, t0, dt, t, dx, dy, dz, lattice_spacing, freezeoutEnergyDensity,
                                             hyperCube4D, hyperCube3D, energy_density_evoution, hydrodynamic_evoution,
-                                            freezeoutSurfaceFile, fo_surf);
+                                            freezeoutSurfaceFile, fo_surf, eqnOfState);
         else printf("Warning: freezeout finder only works in 2+1D or 3+1D! Turn off doFreezeOut ...\n");
       }
 

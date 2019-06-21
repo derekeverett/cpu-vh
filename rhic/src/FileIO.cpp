@@ -2,7 +2,7 @@
  * FileIO.c
  *
  *  Created on: Oct 24, 2015
- *      Author: bazow
+ *      Author: Dennis Bazow
  */
 #include <stdlib.h>
 #include <stdio.h>
