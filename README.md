@@ -31,7 +31,7 @@ To run the code:
 ```
 sh run.sh <NUMTHREADS>
 ```
-where <NUMTHREADS> is the number of cores on which to run the code in parallel.  
+where NUMTHREADS is the number of cores on which to run the code in parallel.  
 Alternatively one can export the enviroment variable `OMP_NUM_THREADS`.
 
 All parameters can be set in the files inside the 'rhic-conf' directory.
