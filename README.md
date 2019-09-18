@@ -11,7 +11,7 @@ Please see arXiv:1608.06577 for a description of the physics, as well as the KT 
 is used to solve the hydrodynamic equations of motion. 
 This code is the CPU version of the algorithm described in the paper, and has been further optimized.
 
-The up to date GPU version of this code can be found at https://github.com/derekeverett/gpu-vh
+The up-to-date GPU version of this code can be found at https://github.com/derekeverett/gpu-vh
 The two codes are designed to be as similar as possible, with the flexibility of running on 
 heterogeneous computing platforms.
 
