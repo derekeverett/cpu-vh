@@ -220,6 +220,9 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
                 PRECISION uy = u->uy[s];
                 PRECISION un = u->un[s];
                 PRECISION ut = 1.0 + ux * ux + uy * uy + t0 * t0 * un * un;
+                u->ut[s] =  ut;
+                up->ut[s] = ut;
+
             }
         }
     }
