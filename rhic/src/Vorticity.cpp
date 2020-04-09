@@ -34,45 +34,46 @@ void * latticeParams, void * hydroParams)
         int snp = columnMajorLinearIndex(i, j, k+1, ncx, ncy, ncz);
 
         //get the fluid velocity at neighbors
-        PRECISION ut = u->ut[s];
-        PRECISION ux = u->ux[s];
-        PRECISION uy = u->uy[s];
-        PRECISION un = u->un[s];
+        //save the covariant components of thermal vorticity tensor \omega_{\mu\nu}
+        PRECISION ut = (u->ut[s]) * -1.0;
+        PRECISION ux = (u->ux[s]) * -1.0;
+        PRECISION uy = (u->uy[s]) * -1.0;;
+        PRECISION un = (u->un[s]) * -1.0;;
 
-        PRECISION ut_p = up->ut[s];
-        PRECISION ux_p = up->ux[s];
-        PRECISION uy_p = up->uy[s];
-        PRECISION un_p = up->un[s];
+        PRECISION ut_p = (up->ut[s]) * -1.0;;
+        PRECISION ux_p = (up->ux[s]) * -1.0;;
+        PRECISION uy_p = (up->uy[s]) * -1.0;;
+        PRECISION un_p = (up->un[s]) * -1.0;;
 
-        PRECISION ut_xm = u->ut[sxm];
-        PRECISION ux_xm = u->ux[sxm];
-        PRECISION uy_xm = u->uy[sxm];
-        PRECISION un_xm = u->un[sxm];
+        PRECISION ut_xm = (u->ut[sxm]) * -1.0;;
+        PRECISION ux_xm = (u->ux[sxm]) * -1.0;;
+        PRECISION uy_xm = (u->uy[sxm]) * -1.0;;
+        PRECISION un_xm = (u->un[sxm]) * -1.0;;
 
-        PRECISION ut_xp = u->ut[sxp];
-        PRECISION ux_xp = u->ux[sxp];
-        PRECISION uy_xp = u->uy[sxp];
-        PRECISION un_xp = u->un[sxp];
+        PRECISION ut_xp = (u->ut[sxp]) * -1.0;;
+        PRECISION ux_xp = (u->ux[sxp]) * -1.0;;
+        PRECISION uy_xp = (u->uy[sxp]) * -1.0;;
+        PRECISION un_xp = (u->un[sxp]) * -1.0;;
 
-        PRECISION ut_ym = u->ut[sym];
-        PRECISION ux_ym = u->ux[sym];
-        PRECISION uy_ym = u->uy[sym];
-        PRECISION un_ym = u->un[sym];
+        PRECISION ut_ym = (u->ut[sym]) * -1.0;;
+        PRECISION ux_ym = (u->ux[sym]) * -1.0;;
+        PRECISION uy_ym = (u->uy[sym]) * -1.0;;
+        PRECISION un_ym = (u->un[sym]) * -1.0;;
 
-        PRECISION ut_yp = u->ut[syp];
-        PRECISION ux_yp = u->ux[syp];
-        PRECISION uy_yp = u->uy[syp];
-        PRECISION un_yp = u->un[syp];
+        PRECISION ut_yp = (u->ut[syp]) * -1.0;;
+        PRECISION ux_yp = (u->ux[syp]) * -1.0;;
+        PRECISION uy_yp = (u->uy[syp]) * -1.0;;
+        PRECISION un_yp = (u->un[syp]) * -1.0;;
 
-        PRECISION ut_nm = u->ut[snm];
-        PRECISION ux_nm = u->ux[snm];
-        PRECISION uy_nm = u->uy[snm];
-        PRECISION un_nm = u->un[snm];
+        PRECISION ut_nm = (u->ut[snm]) * -1.0;;
+        PRECISION ux_nm = (u->ux[snm]) * -1.0;;
+        PRECISION uy_nm = (u->uy[snm]) * -1.0;;
+        PRECISION un_nm = (u->un[snm]) * -1.0;;
 
-        PRECISION ut_np = u->ut[snp];
-        PRECISION ux_np = u->ux[snp];
-        PRECISION uy_np = u->uy[snp];
-        PRECISION un_np = u->un[snp];
+        PRECISION ut_np = (u->ut[snp]) * -1.0;;
+        PRECISION ux_np = (u->ux[snp]) * -1.0;;
+        PRECISION uy_np = (u->uy[snp]) * -1.0;;
+        PRECISION un_np = (u->un[snp]) * -1.0;;
 
         //get the Temperature at neighbors
         PRECISION T = eqnOfState.effectiveTemperature(e[s]);
@@ -91,6 +92,11 @@ void * latticeParams, void * hydroParams)
         PRECISION betax = ux / T;
         PRECISION betay = uy / T;
         PRECISION betan = un / T;
+
+        beta_mu->beta_t[s] = betat;
+        beta_mu->beta_x[s] = betax;
+        beta_mu->beta_y[s] = betay;
+        beta_mu->beta_n[s] = betan;  
 
         PRECISION betat_p = ut_p / T;
         PRECISION betax_p = ux_p / T;

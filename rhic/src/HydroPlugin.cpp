@@ -66,6 +66,8 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(wmunu->wxy, t, outputDir, "wxy", latticeParams);
   output(wmunu->wxn, t, outputDir, "wxn", latticeParams);
   output(wmunu->wyn, t, outputDir, "wyn", latticeParams);
+  output(beta_mu->beta_x, t, outputDir, "beta_x", latticeParams);
+  output(beta_mu->beta_y, t, outputDir, "beta_y", latticeParams);
   #endif
 }
 
@@ -190,6 +192,11 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams,
   //set initial conditions from preequilibrium vectors
   else if (initialConditionType == 14) setICFromPreequilVectors(latticeParams, initCondParams, hydroParams, rootDirectory, init_tmunu);
   else {printf("NOT A VALID INITIAL CONDITION! \n"); exit(-1);}
+
+  //initialize thermal vorticity
+  #ifdef THERMAL_VORTICITY
+  calculateThermalVorticity(t0, dt, q, Q, latticeParams, hydroParams);
+  #endif
 
   // Calculate conserved quantities
   setConservedVariables(t, latticeParams);

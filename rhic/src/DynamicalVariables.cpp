@@ -26,6 +26,8 @@ PRECISION *e, *p;
 
 DYNAMICAL_SOURCE *Source;
 
+THERMALVELOCITY *beta_mu;
+
 VORTICITY *wmunu;
 
 PRECISION *regFacShear, *regFacBulk;
@@ -58,6 +60,12 @@ void allocateHostMemory(int len) {
 	wmunu->wxy = (PRECISION *)calloc(len, bytes);
 	wmunu->wxn = (PRECISION *)calloc(len, bytes);
 	wmunu->wyn = (PRECISION *)calloc(len, bytes);
+
+	beta_mu = (THERMALVELOCITY *)calloc(1, sizeof(THERMALVELOCITY));
+	beta_mu->beta_t = (PRECISION *)calloc(len, bytes);
+	beta_mu->beta_x = (PRECISION *)calloc(len, bytes);
+	beta_mu->beta_y = (PRECISION *)calloc(len, bytes);
+	beta_mu->beta_n = (PRECISION *)calloc(len, bytes);
 	#endif
 
 	//=======================================================

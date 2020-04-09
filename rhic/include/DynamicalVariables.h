@@ -11,9 +11,8 @@
 #define NUMBER_CONSERVATION_LAWS 4
 
 #define PIMUNU
-#define PI
-
-//#define THERMAL_VORTICITY
+//#define PI
+#define THERMAL_VORTICITY
 
 /*********************************************************/
 #ifndef PI
@@ -85,7 +84,7 @@ typedef struct
     PRECISION *sourceb;
 } DYNAMICAL_SOURCE;
 
-//antisymmetric thermal vorticity tensor
+//antisymmetric thermal vorticity tensor with covariant components
 typedef struct
 {
 	PRECISION *wtx;
@@ -96,11 +95,21 @@ typedef struct
 	PRECISION *wyn;
 } VORTICITY;
 
+//thermal velocity vector with covariant components
+typedef struct
+{
+	PRECISION *beta_t;
+	PRECISION *beta_x;
+	PRECISION *beta_y;
+	PRECISION *beta_n;
+} THERMALVELOCITY;
+
 extern CONSERVED_VARIABLES *q,*Q,*qS;
 extern FLUID_VELOCITY *u,*up,*uS,*uSS;
 extern PRECISION *e, *p;
 extern DYNAMICAL_SOURCE *Source;
 extern VORTICITY *wmunu;
+extern THERMALVELOCITY *beta_mu;
 extern PRECISION *regFacShear, *regFacBulk;
 
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny, int nz);
