@@ -220,7 +220,7 @@ if (isnan(*e)) {
 
 	//what should we do when solution for flow velocity is too large?
 	//MUSIC has revert_grid in this case...
-	if ( *ut > 1.0e10 )
+	if ( *ut > 1.0e3 )
 	{
 		printf("\n found ut = %f in getInferredVariables\n", *ut);
 		printf("M0 = %.9f , e = %.9f, p = %.9f, Pi = %.9f, E = %.9f\n", M0, *e, *p, Pi, E);

@@ -42,14 +42,14 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(e, t, outputDir, "e", latticeParams);
   output(u->ux, t, outputDir, "ux", latticeParams);
   output(u->uy, t, outputDir, "uy", latticeParams);
-  output(u->un, t, outputDir, "un", latticeParams);
+  //output(u->un, t, outputDir, "un", latticeParams);
   output(u->ut, t, outputDir, "ut", latticeParams);
-  output(q->ttt, t, outputDir, "ttt", latticeParams);
-  output(q->ttn, t, outputDir, "ttn", latticeParams);
+  //output(q->ttt, t, outputDir, "ttt", latticeParams);
+  //output(q->ttn, t, outputDir, "ttn", latticeParams);
   #ifdef PIMUNU
   output(q->pixx, t, outputDir, "pixx", latticeParams);
   output(q->pixy, t, outputDir, "pixy", latticeParams);
-  output(q->pixn, t, outputDir, "pixn", latticeParams);
+  //output(q->pixn, t, outputDir, "pixn", latticeParams);
   //output(q->piyy, t, outputDir, "piyy", latticeParams);
   //output(q->piyn, t, outputDir, "piyn", latticeParams);
   output(q->pinn, t, outputDir, "pinn", latticeParams);
@@ -60,12 +60,12 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
   output(regFacBulk, t, outputDir, "regFacBulk", latticeParams);
   #endif
   #ifdef THERMAL_VORTICITY
-  output(wmunu->wtx, t, outputDir, "wtx", latticeParams);
-  output(wmunu->wty, t, outputDir, "wty", latticeParams);
-  output(wmunu->wtn, t, outputDir, "wtn", latticeParams);
+  //output(wmunu->wtx, t, outputDir, "wtx", latticeParams);
+  //output(wmunu->wty, t, outputDir, "wty", latticeParams);
+  //output(wmunu->wtn, t, outputDir, "wtn", latticeParams);
   output(wmunu->wxy, t, outputDir, "wxy", latticeParams);
-  output(wmunu->wxn, t, outputDir, "wxn", latticeParams);
-  output(wmunu->wyn, t, outputDir, "wyn", latticeParams);
+  //output(wmunu->wxn, t, outputDir, "wxn", latticeParams);
+  //output(wmunu->wyn, t, outputDir, "wyn", latticeParams);
   output(beta_mu->beta_x, t, outputDir, "beta_x", latticeParams);
   output(beta_mu->beta_y, t, outputDir, "beta_y", latticeParams);
   #endif
@@ -105,7 +105,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams,
   int numberOfSourceFiles = initCond->numberOfSourceFiles;
 
   int doFreezeOut = hydro->doFreezeOut;
-  int write_freq = 10; //write output to file every write_freq timesteps
+  int write_freq = 100; //write output to file every write_freq timesteps
 
   double freezeoutTemperatureGeV = hydro->freezeoutTemperatureGeV;
   const double hbarc = 0.197326938;

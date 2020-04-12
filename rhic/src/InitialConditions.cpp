@@ -190,26 +190,30 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     fclose(fileIn);
 
     //un
-    sprintf(fname, "%s/%s", rootDirectory, "/input/un.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
+    if (nz > 1)
     {
-        printf("Couldn't open un.dat!\n");
+      sprintf(fname, "%s/%s", rootDirectory, "/input/un.dat");
+      fileIn = fopen(fname, "r");
+      if (fileIn == NULL)
+      {
+          printf("Couldn't open un.dat!\n");
+      }
+      else
+      {
+          for(int i = 2; i < nx+2; ++i) {
+              for(int j = 2; j < ny+2; ++j) {
+                  for(int k = 2; k < nz+2; ++k) {
+                      fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
+                      int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+                      u->un[s] =  (PRECISION) value;
+                      up->un[s] = (PRECISION) value;
+                  }
+              }
+          }
+      }
+      fclose(fileIn);
     }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    u->un[s] =  (PRECISION) value;
-                    up->un[s] = (PRECISION) value;
-                }
-            }
-        }
-    }
-    fclose(fileIn);
+
 
     //ut set using normalization
     for(int i = 2; i < nx+2; ++i) {
@@ -295,25 +299,28 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     fclose(fileIn);
 
     //pitn
-    sprintf(fname, "%s/%s", rootDirectory, "/input/pitn.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
+    if (nz > 1)
     {
-        printf("Couldn't open pitn.dat!\n");
+      sprintf(fname, "%s/%s", rootDirectory, "/input/pitn.dat");
+      fileIn = fopen(fname, "r");
+      if (fileIn == NULL)
+      {
+          printf("Couldn't open pitn.dat!\n");
+      }
+      else
+      {
+          for(int i = 2; i < nx+2; ++i) {
+              for(int j = 2; j < ny+2; ++j) {
+                  for(int k = 2; k < nz+2; ++k) {
+                      fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
+                      int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+                      q->pitn[s] =  (PRECISION) value;
+                  }
+              }
+          }
+      }
+      fclose(fileIn);
     }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    q->pitn[s] =  (PRECISION) value;
-                }
-            }
-        }
-    }
-    fclose(fileIn);
 
     //pixx
     sprintf(fname, "%s/%s", rootDirectory, "/input/pixx.dat");
@@ -358,25 +365,28 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     fclose(fileIn);
 
     //pixn
-    sprintf(fname, "%s/%s", rootDirectory, "/input/pixn.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
+    if (nz > 1)
     {
-        printf("Couldn't open pixn.dat!\n");
+      sprintf(fname, "%s/%s", rootDirectory, "/input/pixn.dat");
+      fileIn = fopen(fname, "r");
+      if (fileIn == NULL)
+      {
+          printf("Couldn't open pixn.dat!\n");
+      }
+      else
+      {
+          for(int i = 2; i < nx+2; ++i) {
+              for(int j = 2; j < ny+2; ++j) {
+                  for(int k = 2; k < nz+2; ++k) {
+                      fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
+                      int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+                      q->pixn[s] =  (PRECISION) value;
+                  }
+              }
+          }
+      }
+      fclose(fileIn);
     }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    q->pixn[s] =  (PRECISION) value;
-                }
-            }
-        }
-    }
-    fclose(fileIn);
 
     //piyy
     sprintf(fname, "%s/%s", rootDirectory, "/input/piyy.dat");
@@ -400,25 +410,28 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
     fclose(fileIn);
 
     //piyn
-    sprintf(fname, "%s/%s", rootDirectory, "/input/piyn.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
+    if (nz > 1)
     {
-        printf("Couldn't open piyn.dat!\n");
+      sprintf(fname, "%s/%s", rootDirectory, "/input/piyn.dat");
+      fileIn = fopen(fname, "r");
+      if (fileIn == NULL)
+      {
+          printf("Couldn't open piyn.dat!\n");
+      }
+      else
+      {
+          for(int i = 2; i < nx+2; ++i) {
+              for(int j = 2; j < ny+2; ++j) {
+                  for(int k = 2; k < nz+2; ++k) {
+                      fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
+                      int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
+                      q->piyn[s] =  (PRECISION) value;
+                  }
+              }
+          }
+      }
+      fclose(fileIn);
     }
-    else
-    {
-        for(int i = 2; i < nx+2; ++i) {
-            for(int j = 2; j < ny+2; ++j) {
-                for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
-                    int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    q->piyn[s] =  (PRECISION) value;
-                }
-            }
-        }
-    }
-    fclose(fileIn);
 
     //pinn
     sprintf(fname, "%s/%s", rootDirectory, "/input/pinn.dat");
@@ -443,25 +456,30 @@ void setInitialTmunuFromFiles(void * latticeParams, void * initCondParams, void 
 #endif
 #ifdef PI
     //bulk
-    sprintf(fname, "%s/%s", rootDirectory, "/input/bulk.dat");
-    fileIn = fopen(fname, "r");
-    if (fileIn == NULL)
-    {
-        printf("Couldn't open bulk.dat!\n");
-    }
-    else
+    //sprintf(fname, "%s/%s", rootDirectory, "/input/bulk.dat");
+    //fileIn = fopen(fname, "r");
+    //if (fileIn == NULL)
+    //{
+    //    printf("Couldn't open bulk.dat!\n");
+    //}
+    //else
+
+    //initialize bulk by matching trace of stress tensor : 3(p + Pi) = e
+    //  Pi = e/3 - p
     {
         for(int i = 2; i < nx+2; ++i) {
             for(int j = 2; j < ny+2; ++j) {
                 for(int k = 2; k < nz+2; ++k) {
-                    fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
+                    //fscanf(fileIn, "%f %f %f %f\n", &x, &y, &z, &value);
                     int s = columnMajorLinearIndex(i, j, k, nx+4, ny+4, nz+4);
-                    q->Pi[s] =  (PRECISION) value;
+                    PRECISION p0 = eqnOfState.equilibriumPressure(e[s]);
+                    q->Pi[s] =  e[s] / 3. - p0;
                 }
             }
         }
     }
-    fclose(fileIn);
+
+    //fclose(fileIn);
 #endif
 }
 

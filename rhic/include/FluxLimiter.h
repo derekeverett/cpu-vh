@@ -10,7 +10,7 @@
 
 #include "DynamicalVariables.h"
 
-#define THETA 1.8
+#define THETA 1.1
 
 PRECISION approximateDerivative(PRECISION x, PRECISION y, PRECISION z);
 
