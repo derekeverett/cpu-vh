@@ -236,10 +236,13 @@ void setGhostCellVars(CONSERVED_VARIABLES * const __restrict__ q,
 		u->ux[s] = u->ux[sBC];
 		u->uy[s] = u->uy[sBC];
 		u->un[s] = u->un[sBC];
+
 		q->ttt[s] = q->ttt[sBC];
 		q->ttx[s] = q->ttx[sBC];
 		q->tty[s] = q->tty[sBC];
 		q->ttn[s] = q->ttn[sBC];
+
+
 		// set \pi^\mu\nu ghost cells if evolved
 		#ifdef PIMUNU
 		q->pitt[s] = q->pitt[sBC];
@@ -256,6 +259,19 @@ void setGhostCellVars(CONSERVED_VARIABLES * const __restrict__ q,
 		// set \Pi ghost cells if evolved
 		#ifdef PI
 		q->Pi[s] = q->Pi[sBC];
+		#endif
+		// set thermal velocity and vorticity ghost cells if evolved
+		#ifdef THERMAL_VORTICITY
+		wmunu->wtx[s] = wmunu->wtx[sBC];
+		wmunu->wty[s] = wmunu->wty[sBC];
+		wmunu->wtn[s] = wmunu->wtn[sBC];
+		wmunu->wxy[s] = wmunu->wxy[sBC];
+		wmunu->wxn[s] = wmunu->wxn[sBC];
+		wmunu->wyn[s] = wmunu->wyn[sBC];
+		beta_mu->beta_t[s] = beta_mu->beta_t[sBC];
+		beta_mu->beta_x[s] = beta_mu->beta_x[sBC];
+		beta_mu->beta_y[s] = beta_mu->beta_y[sBC];
+		beta_mu->beta_n[s] = beta_mu->beta_n[sBC];
 		#endif
 	}
 
@@ -413,5 +429,17 @@ void setGhostCellVars(CONSERVED_VARIABLES * const __restrict__ q,
 		#ifdef PI
 		free(q->Pi);
 		#endif
+		#ifdef THERMAL_VORTICITY
+		free(wmunu->wtx);
+		free(wmunu->wty);
+		free(wmunu->wtn);
+		free(wmunu->wxy);
+		free(wmunu->wxn);
+		free(wmunu->wyn);
+		free(beta_mu->beta_t);
+		free(beta_mu->beta_x);
+		free(beta_mu->beta_y);
+		free(beta_mu->beta_n);
 		free(q);
+		#endif
 	}
